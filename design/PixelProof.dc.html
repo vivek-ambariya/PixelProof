@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+html{background:#0b0908}
+body{margin:0;background:#0b0908;color:#ece7e1;font-family:Archivo,"Helvetica Neue",sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:#4fd8c4;text-decoration:none;border-bottom:1px solid rgba(79,216,196,.35)}
+a:hover{color:#7fe8d8;border-bottom-color:#7fe8d8}
+*{box-sizing:border-box}
+#pp-grain{position:fixed;inset:-50%;z-index:999;pointer-events:none;opacity:.055;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>")}
+@keyframes ppRise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes ppFade{from{opacity:0}to{opacity:1}}
+@keyframes ppSweep{0%{transform:translateY(-100%)}100%{transform:translateY(1100%)}}
+@keyframes ppPulse{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes ppSpin{to{transform:rotate(360deg)}}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:#3a332e}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:22px;margin-top:-10px;border-radius:1px;background:#ece7e1;border:none;cursor:ew-resize}
+input[type=range]:focus-visible{outline:2px solid #4fd8c4;outline-offset:6px}
+[data-pp-wrap]{display:grid;grid-template-columns:1.05fr .95fr;gap:64px}
+[data-pp-steps]{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+[data-pp-hide-sm]{display:block}
+@media(max-width:900px){
+[data-pp-wrap],[data-pp-steps]{grid-template-columns:1fr;gap:32px}
+[data-pp-hide-sm]{display:none}
+[data-pp-sticky]{position:static!important;height:auto!important}
+[data-pp-diagram]{position:relative!important;opacity:1!important;transform:none!important}
+[data-pp-compare]{grid-template-columns:1fr!important}
+[data-pp-pad]{padding-left:20px!important;padding-right:20px!important}
+[data-pp-huge]{font-size:56px!important}
+[data-pp-stat]{font-size:96px!important}
+}
+</style>
+</helmet>
+
+<div id="pp-grain"></div>
+<input type="file" accept="image/*" ref="{{ fileRef }}" onChange="{{ onPick }}" style="display:none">
+
+<div style="max-width:1240px;margin:0 auto;padding:0 56px 0" data-pp-pad="1">
+
+<header data-screen-label="Nav" style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 0 0;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8a807a">
+  <div style="display:flex;align-items:center;gap:12px">
+    <div style="width:11px;height:11px;border:1px solid #4fd8c4;position:relative">
+      <div style="position:absolute;inset:3px;background:#4fd8c4"></div>
+    </div>
+    <span style="color:#ece7e1;font-weight:700;letter-spacing:.18em">PIXELPROOF</span>
+  </div>
+  <div style="display:flex;gap:26px;align-items:center">
+    <span data-pp-hide-sm="1">MODEL&nbsp;<span style="color:#ece7e1">pp-detect / v0.3</span></span>
+    <span data-pp-hide-sm="1">STATUS&nbsp;<span style="color:#4fd8c4">● ONLINE</span></span>
+    <a href="https://github.com" style="border:none;color:#8a807a;letter-spacing:.12em" style-hover="color:#ece7e1">GITHUB ↗</a>
+  </div>
+</header>
+
+<section data-screen-label="Hero" style="padding:76px 0 92px">
+  <div data-pp-wrap="1">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#c8892f;text-transform:uppercase;animation:ppFade .6s ease both">MEDIA FORENSICS · HACKATHON BUILD</div>
+      <h1 data-pp-huge="1" style="margin:20px 0 0;font-size:82px;line-height:.94;letter-spacing:-.035em;font-weight:600;text-wrap:pretty;animation:ppRise .7s cubic-bezier(.2,.7,.3,1) both">Was this image<br>made by a camera<br>or by a model?</h1>
+      <p style="margin:26px 0 0;max-width:46ch;font-size:17px;line-height:1.6;color:#a8a09a;text-wrap:pretty;animation:ppRise .7s cubic-bezier(.2,.7,.3,1) .1s both">PixelProof estimates the likelihood that an image was synthetically generated, then shows you where in the frame that estimate comes from. It reports probabilities, not verdicts.</p>
+      <div style="display:flex;gap:30px;margin:38px 0 0;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.09em;color:#6f6660;animation:ppFade .8s ease .25s both">
+        <div><div style="color:#ece7e1;font-size:20px;letter-spacing:-.01em">3</div>SIGNAL FAMILIES</div>
+        <div><div style="color:#ece7e1;font-size:20px;letter-spacing:-.01em">~1.2s</div>MEDIAN INFERENCE</div>
+        <div><div style="color:#ece7e1;font-size:20px;letter-spacing:-.01em">0</div>IMAGES RETAINED</div>
+      </div>
+    </div>
+
+    <div ref="{{ panelRef }}" style="animation:ppRise .8s cubic-bezier(.2,.7,.3,1) .15s both">
+      <sc-if value="{{ isIdle }}" hint-placeholder-val="{{ true }}">
+        <div tabindex="0" role="button" aria-label="Upload an image to analyse" onClick="{{ onZone }}" onKeyDown="{{ onZoneKey }}" onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" onDrop="{{ onDrop }}" ref="{{ zoneRef }}" style="cursor:pointer;border:1px dashed #443c36;background:#100d0c;padding:52px 40px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:352px;transition:border-color .2s,background .2s" style-hover="border-color:#4fd8c4;background:#131010" style-focus="outline:2px solid #4fd8c4;outline-offset:3px">
+          <div style="width:46px;height:46px;border:1px solid #4fd8c4;position:relative;margin-bottom:24px">
+            <div style="position:absolute;left:50%;top:12px;bottom:12px;width:1px;background:#4fd8c4"></div>
+            <div style="position:absolute;top:50%;left:12px;right:12px;height:1px;background:#4fd8c4"></div>
+          </div>
+          <div style="font-size:17px;font-weight:500;letter-spacing:-.01em">Drop an image, or click to browse</div>
+          <div style="margin-top:9px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.09em;color:#6f6660;text-align:center;line-height:1.7">JPG · PNG · WEBP &nbsp;/&nbsp; MAX 12 MB<br>PROCESSED IN-REQUEST, NOT STORED</div>
+          <button onClick="{{ onSample }}" style="margin-top:28px;background:transparent;border:1px solid #443c36;color:#a8a09a;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:11px 18px;cursor:pointer;transition:.18s" style-hover="border-color:#8a807a;color:#ece7e1" style-focus="outline:2px solid #4fd8c4;outline-offset:2px">Run sample specimen</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid #241f1c;background:#100d0c;min-height:352px;padding:30px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;position:relative">
+          <div style="position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,#4fd8c4,transparent);animation:ppSweep 1.5s linear infinite"></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:#4fd8c4">ANALYSING · POST /predict</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2.1;color:#8a807a">
+            <div>→ decoding · normalising to 512²</div>
+            <div>→ fft residual pass</div>
+            <div>→ grain covariance estimate</div>
+            <div>→ illumination consistency</div>
+            <div style="color:#ece7e1">→ aggregating <span style="animation:ppPulse 1s infinite">▍</span></div>
+          </div>
+          <div style="height:2px;background:#241f1c;overflow:hidden"><div ref="{{ loadBarRef }}" style="height:100%;width:8%;background:#4fd8c4;transition:width 1.4s cubic-bezier(.3,.7,.3,1)"></div></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid #6b3a1e;background:#150f0c;min-height:352px;padding:30px;display:flex;flex-direction:column;justify-content:center;gap:16px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;color:#e0a13a">INFERENCE FAILED · 503</div>
+          <div style="font-size:19px;font-weight:500;letter-spacing:-.01em">The model endpoint did not respond.</div>
+          <p style="margin:0;color:#a8a09a;font-size:15px;line-height:1.6;max-width:42ch">Nothing was scored and nothing was stored. The image stayed in your browser. Retry, or try a smaller file.</p>
+          <div style="display:flex;gap:10px;margin-top:6px">
+            <button onClick="{{ onRetry }}" style="background:#e0a13a;border:none;color:#100d0c;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:12px 20px;cursor:pointer" style-hover="background:#eeb45c">Retry</button>
+            <button onClick="{{ onReset }}" style="background:transparent;border:1px solid #443c36;color:#a8a09a;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:12px 20px;cursor:pointer" style-hover="color:#ece7e1;border-color:#8a807a">Choose another file</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isResult }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid #241f1c;background:#100d0c">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:18px 22px;border-bottom:1px solid #241f1c;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#6f6660">
+            <span ref="{{ fileNameRef }}" style="color:#ece7e1">specimen-01.jpg</span>
+            <span ref="{{ sourceRef }}">2048×1365 · 1.14s</span>
+          </div>
+
+          <div data-pp-compare="1" style="display:grid;grid-template-columns:1fr;position:relative">
+            <div ref="{{ frameRef }}" style="position:relative;aspect-ratio:3/2;overflow:hidden;background:#0b0908">
+              <image-slot id="pp-specimen" shape="rect" fit="cover" placeholder="Drop the specimen photograph"></image-slot>
+              <img ref="{{ imgRef }}" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+              <div ref="{{ heatRef }}" style="position:absolute;inset:0;clip-path:inset(0 0 0 50%);pointer-events:none">
+                <div style="position:absolute;inset:0;mix-blend-mode:screen;background:radial-gradient(30% 34% at 38% 41%,rgba(224,161,58,.92),rgba(224,161,58,0) 70%),radial-gradient(17% 19% at 63% 32%,rgba(230,90,40,.85),rgba(230,90,40,0) 72%),radial-gradient(24% 26% at 72% 66%,rgba(224,161,58,.5),rgba(224,161,58,0) 74%),radial-gradient(40% 46% at 22% 78%,rgba(40,120,190,.42),rgba(40,120,190,0) 76%),linear-gradient(180deg,rgba(20,40,90,.32),rgba(20,40,90,.32))"></div>
+                <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(236,231,225,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(236,231,225,.07) 1px,transparent 1px);background-size:28px 28px"></div>
+                <div style="position:absolute;left:0;top:0;bottom:0;width:1px;background:#ece7e1"></div>
+                <div style="position:absolute;left:8px;top:10px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.13em;color:#ece7e1">SALIENCY</div>
+              </div>
+              <div style="position:absolute;left:8px;top:10px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.13em;color:rgba(236,231,225,.7)">ORIGINAL</div>
+            </div>
+            <div style="padding:14px 22px 18px;border-top:1px solid #241f1c;display:flex;align-items:center;gap:16px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:#6f6660">WIPE</span>
+              <input type="range" min="0" max="100" value="50" aria-label="Compare original with heat-map" onInput="{{ onWipe }}" style="flex:1;height:22px">
+              <div style="display:flex;gap:10px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:#6f6660">
+                <span style="display:flex;align-items:center;gap:5px"><i style="width:9px;height:9px;background:#e0a13a;display:block"></i>HIGH</span>
+                <span style="display:flex;align-items:center;gap:5px"><i style="width:9px;height:9px;background:#2878be;display:block"></i>LOW</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding:24px 22px 26px;border-top:1px solid #241f1c">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px">
+              <div style="font-size:26px;font-weight:600;letter-spacing:-.02em;color:#e0a13a">Likely AI-generated</div>
+              <div ref="{{ pctRef }}" style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:#e0a13a">0.0%</div>
+            </div>
+            <div style="margin-top:14px;height:6px;background:#241f1c;position:relative">
+              <div ref="{{ barRef }}" style="position:absolute;left:0;top:0;bottom:0;width:0;background:#e0a13a;transition:width 1.5s cubic-bezier(.2,.8,.25,1)"></div>
+              <div style="position:absolute;left:50%;top:-4px;bottom:-4px;width:1px;background:#443c36"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:7px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:#6f6660">
+              <span>0 · CAMERA-CONSISTENT</span><span>0.5</span><span>GENERATOR-CONSISTENT · 1</span>
+            </div>
+
+            <div style="margin-top:22px;border:1px solid #241f1c;background:#0d0b0a;padding:18px 20px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.13em;color:#6f6660;text-transform:uppercase">Explanation</div>
+              <p style="margin:10px 0 0;font-size:15px;line-height:1.65;color:#c6bfb8;text-wrap:pretty">Grain across the flat background is close to uniform where a sensor would leave intensity-dependent noise, and the frequency residual shows a faint regular lattice consistent with an upsampling step. Highlight direction on the two foreground subjects disagrees by about 24°. Read this as a likelihood, not a finding.</p>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:18px">
+              <button onClick="{{ onReset }}" style="background:transparent;border:1px solid #443c36;color:#a8a09a;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:11px 18px;cursor:pointer;transition:.18s" style-hover="color:#ece7e1;border-color:#8a807a" style-focus="outline:2px solid #4fd8c4;outline-offset:2px">Analyse another</button>
+              <a href="#batch" style="border:1px solid #443c36;color:#a8a09a;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:11px 18px;transition:.18s" style-hover="color:#ece7e1;border-color:#8a807a">Batch mode ↓</a>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="How it reads" ref="{{ stepsRef }}" style="padding:60px 0 40px;border-top:1px solid #1a1614">
+  <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#6f6660;text-transform:uppercase">02 · Method</div>
+  <h2 style="margin:16px 0 0;font-size:48px;line-height:1.02;letter-spacing:-.03em;font-weight:600;max-width:20ch;text-wrap:pretty">How it reads an image</h2>
+  <p style="margin:18px 0 0;max-width:52ch;color:#a8a09a;font-size:16px;line-height:1.6">Three independent signal families are scored separately, then combined. Each is weak alone; the combination is what carries information.</p>
+
+  <div data-pp-steps="1" style="margin-top:64px">
+    <div data-pp-sticky="1" style="position:sticky;top:88px;height:min(74vh,560px)">
+      <div style="position:relative;width:100%;height:100%;border:1px solid #241f1c;background:#100d0c">
+        <div data-pp-diagram="1" data-idx="0" style="position:absolute;inset:0;padding:34px;display:flex;flex-direction:column;gap:18px;transition:opacity .45s,transform .45s">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.13em;color:#6f6660">FIG. 1 — LOG-MAGNITUDE SPECTRUM</div>
+          <div style="flex:1;position:relative;background:#0b0908;overflow:hidden">
+            <div style="position:absolute;inset:0;background:radial-gradient(48% 48% at 50% 50%,rgba(236,231,225,.22),rgba(236,231,225,.02) 62%,transparent 72%)"></div>
+            <div data-pp-lattice="1" style="position:absolute;inset:0;opacity:0;background-image:radial-gradient(circle,rgba(224,161,58,.95) 1.4px,transparent 1.6px);background-size:44px 44px;background-position:center"></div>
+            <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(236,231,225,.12)"></div>
+            <div style="position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(236,231,225,.12)"></div>
+            <div data-pp-ring="1" style="position:absolute;left:50%;top:50%;width:58%;height:58%;transform:translate(-50%,-50%) scale(.6);border:1px solid rgba(224,161,58,.5);border-radius:50%;opacity:0"></div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:#8a807a">PERIODIC PEAKS OFF-AXIS → <span style="color:#e0a13a">UPSAMPLING LATTICE</span></div>
+        </div>
+
+        <div data-pp-diagram="1" data-idx="1" style="position:absolute;inset:0;padding:34px;display:flex;flex-direction:column;gap:18px;opacity:0;transition:opacity .45s,transform .45s">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.13em;color:#6f6660">FIG. 2 — NOISE VARIANCE BY LUMINANCE</div>
+          <div style="flex:1;position:relative;background:#0b0908;overflow:hidden">
+            <svg viewBox="0 0 400 260" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+              <g stroke="rgba(236,231,225,.09)" stroke-width="1">
+                <line x1="0" y1="65" x2="400" y2="65"></line><line x1="0" y1="130" x2="400" y2="130"></line><line x1="0" y1="195" x2="400" y2="195"></line>
+              </g>
+              <path data-pp-curve="a" d="M8 232 C 80 168, 150 122, 210 108 S 330 96, 392 62" fill="none" stroke="#4fd8c4" stroke-width="2.5" stroke-dasharray="720" stroke-dashoffset="720"></path>
+              <path data-pp-curve="b" d="M8 148 C 90 144, 160 150, 220 146 S 330 152, 392 148" fill="none" stroke="#e0a13a" stroke-width="2.5" stroke-dasharray="720" stroke-dashoffset="720"></path>
+            </svg>
+            <div style="position:absolute;left:14px;top:12px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:#4fd8c4">SENSOR — RISES WITH SIGNAL</div>
+            <div style="position:absolute;left:14px;top:30px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;color:#e0a13a">GENERATED — NEARLY FLAT</div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:#8a807a">σ² INDEPENDENT OF LUMINANCE → <span style="color:#e0a13a">SYNTHETIC TEXTURE</span></div>
+        </div>
+
+        <div data-pp-diagram="1" data-idx="2" style="position:absolute;inset:0;padding:34px;display:flex;flex-direction:column;gap:18px;opacity:0;transition:opacity .45s,transform .45s">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.13em;color:#6f6660">FIG. 3 — ESTIMATED LIGHT DIRECTION</div>
+          <div style="flex:1;position:relative;background:#0b0908;overflow:hidden">
+            <svg viewBox="0 0 400 260" style="position:absolute;inset:0;width:100%;height:100%">
+              <ellipse cx="120" cy="170" rx="46" ry="46" fill="none" stroke="rgba(236,231,225,.3)" stroke-width="1.5"></ellipse>
+              <ellipse cx="276" cy="170" rx="46" ry="46" fill="none" stroke="rgba(236,231,225,.3)" stroke-width="1.5"></ellipse>
+              <ellipse cx="146" cy="228" rx="62" ry="11" fill="rgba(79,216,196,.16)"></ellipse>
+              <ellipse cx="248" cy="228" rx="62" ry="11" fill="rgba(224,161,58,.16)"></ellipse>
+              <g data-pp-ray="a" opacity="0">
+                <line x1="120" y1="170" x2="44" y2="72" stroke="#4fd8c4" stroke-width="2"></line>
+                <circle cx="44" cy="72" r="4" fill="#4fd8c4"></circle>
+              </g>
+              <g data-pp-ray="b" opacity="0">
+                <line x1="276" y1="170" x2="352" y2="60" stroke="#e0a13a" stroke-width="2"></line>
+                <circle cx="352" cy="60" r="4" fill="#e0a13a"></circle>
+              </g>
+              <text data-pp-ray="c" opacity="0" x="200" y="42" text-anchor="middle" fill="#e0a13a" font-family="JetBrains Mono, monospace" font-size="15">Δ 24°</text>
+            </svg>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.8;color:#8a807a">SHADING NORMALS DISAGREE → <span style="color:#e0a13a">INCONSISTENT SCENE</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column">
+      <div data-pp-step="0" style="min-height:min(74vh,560px);display:flex;flex-direction:column;justify-content:center;padding:20px 0">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;color:#c8892f">STEP 01</div>
+        <h3 style="margin:14px 0 0;font-size:32px;line-height:1.12;letter-spacing:-.02em;font-weight:600">Frequency artefacts</h3>
+        <p style="margin:16px 0 0;color:#a8a09a;font-size:16px;line-height:1.65;max-width:44ch;text-wrap:pretty">Generators build images by repeatedly upsampling a small latent grid. That process tends to leave faint, regularly spaced peaks in the frequency domain that a lens and sensor do not produce. The peaks are invisible to the eye and survive moderate resizing, though not heavy re-compression.</p>
+      </div>
+      <div data-pp-step="1" style="min-height:min(74vh,560px);display:flex;flex-direction:column;justify-content:center;padding:20px 0">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;color:#c8892f">STEP 02</div>
+        <h3 style="margin:14px 0 0;font-size:32px;line-height:1.12;letter-spacing:-.02em;font-weight:600">Texture and grain statistics</h3>
+        <p style="margin:16px 0 0;color:#a8a09a;font-size:16px;line-height:1.65;max-width:44ch;text-wrap:pretty">Real sensor noise scales with the amount of light hitting each photosite, so variance climbs with brightness and differs per colour channel. Synthesised grain is usually applied more evenly. PixelProof measures noise variance against local luminance and looks for that relationship to be missing.</p>
+      </div>
+      <div data-pp-step="2" style="min-height:min(74vh,560px);display:flex;flex-direction:column;justify-content:center;padding:20px 0">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;color:#c8892f">STEP 03</div>
+        <h3 style="margin:14px 0 0;font-size:32px;line-height:1.12;letter-spacing:-.02em;font-weight:600">Lighting and geometry</h3>
+        <p style="margin:16px 0 0;color:#a8a09a;font-size:16px;line-height:1.65;max-width:44ch;text-wrap:pretty">Highlights, shadows and reflections in a photograph all resolve to the same light sources. Generated scenes often disagree by a few degrees between objects, and vanishing lines drift. This signal is the weakest of the three and the easiest to trip on a genuinely odd photograph, so it is weighted lowest.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="The hard part" style="padding:96px 0;border-top:1px solid #1a1614">
+  <div data-pp-wrap="1" style="align-items:end">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#6f6660;text-transform:uppercase">03 · Limits</div>
+      <h2 style="margin:16px 0 0;font-size:48px;line-height:1.02;letter-spacing:-.03em;font-weight:600;max-width:18ch;text-wrap:pretty">The hard part isn't detection</h2>
+      <p style="margin:22px 0 0;max-width:50ch;color:#a8a09a;font-size:16px;line-height:1.65;text-wrap:pretty">On the generators a detector was trained against, accuracy above 95% is routine. Point the same detector at a model released afterwards and it collapses. The cues are generator-specific: change the architecture or the upsampling scheme and the artefacts move.</p>
+      <p style="margin:16px 0 0;max-width:50ch;color:#a8a09a;font-size:16px;line-height:1.65;text-wrap:pretty">So the useful output isn't a label. It's a probability with the evidence attached, so a person can weigh it against everything else they know about the image.</p>
+    </div>
+    <div>
+      <div data-pp-stat="1" data-count="18|31" style="font-family:'JetBrains Mono',monospace;font-size:132px;font-weight:700;line-height:.86;letter-spacing:-.05em;color:#e0a13a">0–0<span style="font-size:.42em;letter-spacing:0">%</span></div>
+      <div style="margin-top:22px;padding-top:20px;border-top:1px solid #241f1c;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.9;letter-spacing:.04em;color:#8a807a;max-width:38ch">AVERAGE ACCURACY OF PUBLISHED DETECTORS ON GENERATORS THEY WERE <span style="color:#ece7e1">NOT</span> TRAINED ON.<br>WORSE THAN A COIN FLIP AT THE LOW END.</div>
+    </div>
+  </div>
+</section>
+
+<section data-screen-label="Batch mode" id="batch" style="padding:88px 0;border-top:1px solid #1a1614">
+  <div style="display:flex;align-items:end;justify-content:space-between;gap:24px;flex-wrap:wrap">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;color:#6f6660;text-transform:uppercase">04 · Batch</div>
+      <h2 style="margin:16px 0 0;font-size:48px;line-height:1.02;letter-spacing:-.03em;font-weight:600">Batch mode</h2>
+      <p style="margin:16px 0 0;max-width:50ch;color:#a8a09a;font-size:16px;line-height:1.6">Drop a folder to score a set at once. Sorted by likelihood, so the images worth a second look sit at the top.</p>
+    </div>
+    <button onClick="{{ onZone }}" style="background:#4fd8c4;border:none;color:#0b0908;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:14px 22px;cursor:pointer;transition:.18s" style-hover="background:#7fe8d8" style-focus="outline:2px solid #4fd8c4;outline-offset:3px">Add files</button>
+  </div>
+
+  <div style="margin-top:44px;border:1px solid #241f1c;background:#100d0c;overflow-x:auto">
+    <div style="display:grid;grid-template-columns:2.2fr 1fr 1.3fr 2fr 1.2fr;gap:16px;padding:14px 22px;border-bottom:1px solid #241f1c;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.13em;color:#6f6660;text-transform:uppercase;min-width:820px">
+      <span>File</span><span>Dimensions</span><span>Nearest match</span><span>P(generated)</span><span style="text-align:right">Read</span>
+    </div>
+    <div ref="{{ rowsRef }}" style="min-width:820px">
+      <div data-pp-row="1" style="display:grid;grid-template-columns:2.2fr 1fr 1.3fr 2fr 1.2fr;gap:16px;padding:16px 22px;border-bottom:1px solid #1a1614;align-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0">
+        <span style="color:#ece7e1">rally-crowd-04.jpg</span><span style="color:#8a807a">2048×1365</span><span style="color:#8a807a">diffusion / v3-class</span>
+        <span style="display:flex;align-items:center;gap:12px"><i style="flex:1;height:4px;background:#241f1c;display:block;position:relative"><b style="position:absolute;inset:0 6% 0 0;background:#e0a13a;display:block"></b></i><em style="font-style:normal;color:#e0a13a;min-width:52px">0.94</em></span>
+        <span style="text-align:right;color:#e0a13a;font-size:11px;letter-spacing:.09em">LIKELY AI</span>
+      </div>
+      <div data-pp-row="1" style="display:grid;grid-template-columns:2.2fr 1fr 1.3fr 2fr 1.2fr;gap:16px;padding:16px 22px;border-bottom:1px solid #1a1614;align-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0">
+        <span style="color:#ece7e1">portrait-source-a.png</span><span style="color:#8a807a">1024×1024</span><span style="color:#8a807a">gan / face-class</span>
+        <span style="display:flex;align-items:center;gap:12px"><i style="flex:1;height:4px;background:#241f1c;display:block;position:relative"><b style="position:absolute;inset:0 13% 0 0;background:#e0a13a;display:block"></b></i><em style="font-style:normal;color:#e0a13a;min-width:52px">0.87</em></span>
+        <span style="text-align:right;color:#e0a13a;font-size:11px;letter-spacing:.09em">LIKELY AI</span>
+      </div>
+      <div data-pp-row="1" style="display:grid;grid-template-columns:2.2fr 1fr 1.3fr 2fr 1.2fr;gap:16px;padding:16px 22px;border-bottom:1px solid #1a1614;align-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0">
+        <span style="color:#ece7e1">street-flood-11.jpg</span><span style="color:#8a807a">3024×4032</span><span style="color:#8a807a">inconclusive</span>
+        <span style="display:flex;align-items:center;gap:12px"><i style="flex:1;height:4px;background:#241f1c;display:block;position:relative"><b style="position:absolute;inset:0 47% 0 0;background:#8a807a;display:block"></b></i><em style="font-style:normal;color:#c6bfb8;min-width:52px">0.53</em></span>
+        <span style="text-align:right;color:#8a807a;font-size:11px;letter-spacing:.09em">UNCERTAIN</span>
+      </div>
+      <div data-pp-row="1" style="display:grid;grid-template-columns:2.2fr 1fr 1.3fr 2fr 1.2fr;gap:16px;padding:16px 22px;border-bottom:1px solid #1a1614;align-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0">
+        <span style="color:#ece7e1">press-pool-2231.jpg</span><span style="color:#8a807a">5472×3648</span><span style="color:#8a807a">camera / exif intact</span>
+        <span style="display:flex;align-items:center;gap:12px"><i style="flex:1;height:4px;background:#241f1c;display:block;position:relative"><b style="position:absolute;inset:0 81% 0 0;background:#4fd8c4;display:block"></b></i><em style="font-style:normal;color:#4fd8c4;min-width:52px">0.19</em></span>
+        <span style="text-align:right;color:#4fd8c4;font-size:11px;letter-spacing:.09em">LIKELY REAL</span>
+      </div>
+      <div data-pp-row="1" style="display:grid;grid-template-columns:2.2fr 1fr 1.3fr 2fr 1.2fr;gap:16px;padding:16px 22px;border-bottom:1px solid #1a1614;align-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0">
+        <span style="color:#ece7e1">archive-scan-078.tif</span><span style="color:#8a807a">4096×2731</span><span style="color:#8a807a">camera / film scan</span>
+        <span style="display:flex;align-items:center;gap:12px"><i style="flex:1;height:4px;background:#241f1c;display:block;position:relative"><b style="position:absolute;inset:0 89% 0 0;background:#4fd8c4;display:block"></b></i><em style="font-style:normal;color:#4fd8c4;min-width:52px">0.11</em></span>
+        <span style="text-align:right;color:#4fd8c4;font-size:11px;letter-spacing:.09em">LIKELY REAL</span>
+      </div>
+      <div data-pp-row="1" style="display:grid;grid-template-columns:2.2fr 1fr 1.3fr 2fr 1.2fr;gap:16px;padding:16px 22px;align-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;opacity:0">
+        <span style="color:#ece7e1">handout-crop.webp</span><span style="color:#8a807a">800×450</span><span style="color:#8a807a">too small to score</span>
+        <span style="display:flex;align-items:center;gap:12px"><i style="flex:1;height:4px;background:#241f1c;display:block;position:relative"></i><em style="font-style:normal;color:#6f6660;min-width:52px">n/a</em></span>
+        <span style="text-align:right;color:#6f6660;font-size:11px;letter-spacing:.09em">SKIPPED</span>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;color:#6f6660">6 FILES · 1 SKIPPED · SCORES ARE LIKELIHOODS, NOT CLASSIFICATIONS</div>
+</section>
+
+<footer data-screen-label="Footer" style="padding:64px 0 72px;border-top:1px solid #1a1614">
+  <div data-pp-wrap="1">
+    <div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:11px;height:11px;border:1px solid #4fd8c4;position:relative"><div style="position:absolute;inset:3px;background:#4fd8c4"></div></div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.18em">PIXELPROOF</span>
+      </div>
+      <p style="margin:20px 0 0;max-width:44ch;font-size:15px;line-height:1.65;color:#a8a09a;text-wrap:pretty">Built in 36 hours for a media forensics hackathon. Open source, no accounts, images discarded after inference.</p>
+      <div style="margin-top:22px;display:flex;gap:18px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.11em;text-transform:uppercase">
+        <a href="https://github.com">GitHub ↗</a>
+        <a href="https://github.com">Model card ↗</a>
+        <a href="https://github.com">Eval set ↗</a>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <div style="border-left:1px solid #443c36;padding-left:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.13em;color:#c8892f;text-transform:uppercase">Limitations</div>
+        <p style="margin:9px 0 0;font-size:14px;line-height:1.7;color:#a8a09a;text-wrap:pretty">Accuracy drops sharply on generators released after training, on heavily compressed or resized images, on screenshots, and on photographs with unusual noise profiles. Scores below 0.65 should be treated as inconclusive.</p>
+      </div>
+      <div style="border-left:1px solid #4fd8c4;padding-left:20px">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.13em;color:#4fd8c4;text-transform:uppercase">What this is not</div>
+        <p style="margin:9px 0 0;font-size:14px;line-height:1.7;color:#c6bfb8;text-wrap:pretty">PixelProof reports likelihoods, not accusations. It makes no claim about who produced an image, and no claim about any real person appearing in one. A high score is a reason to check further, never a conclusion on its own.</p>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:56px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.11em;color:#4a4340;text-transform:uppercase">
+    <span>PP-DETECT V0.3 · BUILD 2026.09</span><span>NO IMAGES RETAINED · NO TRACKING</span>
+  </div>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;startWithResult&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Demo state&quot; },
+  &quot;simulateError&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Demo state&quot; },
+  &quot;endpoint&quot;: { &quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;/predict&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Demo state&quot; },
+  &quot;scrollAnimations&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Motion&quot; },
+  &quot;grainIntensity&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 0.5, &quot;min&quot;: 0, &quot;max&quot;: 1, &quot;step&quot;: 0.05, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Motion&quot; }
+}">
+class Component extends DCLogic {
+  state = { phase: 'idle' };
+
+  constructor(props) {
+    super(props);
+    this.fileRef = React.createRef();
+    this.zoneRef = React.createRef();
+    this.panelRef = React.createRef();
+    this.imgRef = React.createRef();
+    this.heatRef = React.createRef();
+    this.frameRef = React.createRef();
+    this.barRef = React.createRef();
+    this.pctRef = React.createRef();
+    this.loadBarRef = React.createRef();
+    this.fileNameRef = React.createRef();
+    this.sourceRef = React.createRef();
+    this.stepsRef = React.createRef();
+    this.rowsRef = React.createRef();
+    this.result = null;
+    this.objectUrl = null;
+  }
+
+  get reduced() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  get scrubOK() {
+    return (this.props.scrollAnimations ?? true) && !this.reduced && window.innerWidth > 900;
+  }
+
+  componentDidMount() {
+    const g = document.getElementById('pp-grain');
+    if (g) g.style.opacity = String(0.03 + 0.05 * (this.props.grainIntensity ?? 0.5));
+    this.initScroll();
+    if (this.props.startWithResult) this.setState({ phase: 'result' }, () => this.animateResult());
+  }
+
+  componentDidUpdate(_p, prev) {
+    if (prev.phase !== this.state.phase) {
+      if (this.state.phase === 'result') this.animateResult();
+      if (this.state.phase === 'loading') requestAnimationFrame(() => {
+        if (this.loadBarRef.current) this.loadBarRef.current.style.width = '92%';
+      });
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+    }
+  }
+
+  /* ---------- scroll-driven sequences ---------- */
+  initScroll() {
+    if (!window.gsap || !window.ScrollTrigger) return;
+    gsap.registerPlugin(ScrollTrigger);
+
+    const grain = document.getElementById('pp-grain');
+    const base = 0.03 + 0.05 * (this.props.grainIntensity ?? 0.5);
+    if (grain && !this.reduced) {
+      gsap.to(grain, {
+        opacity: base * 2.4, ease: 'none',
+        scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 0.6 }
+      });
+    }
+
+    // stat counter 18–31
+    const stat = document.querySelector('[data-count]');
+    if (stat) {
+      const run = () => {
+        const [a, b] = stat.dataset.count.split('|').map(Number);
+        if (this.reduced) { stat.innerHTML = a + '\u2013' + b + '<span style="font-size:.42em">%</span>'; return; }
+        const t0 = performance.now(), dur = 1300;
+        const tick = (now) => {
+          const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+          stat.innerHTML = Math.round(a * e) + '\u2013' + Math.round(b * e) + '<span style="font-size:.42em">%</span>';
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      };
+      ScrollTrigger.create({ trigger: stat, start: 'top 82%', once: true, onEnter: run });
+    }
+
+    // batch rows stagger
+    if (this.rowsRef.current) {
+      ScrollTrigger.create({
+        trigger: this.rowsRef.current, start: 'top 85%', once: true,
+        onEnter: () => {
+          const rows = this.rowsRef.current.querySelectorAll('[data-pp-row]');
+          rows.forEach((r, i) => {
+            r.style.animation = 'ppRise .55s cubic-bezier(.2,.7,.3,1) both';
+            r.style.animationDelay = (this.reduced ? 0 : i * 0.07) + 's';
+          });
+        }
+      });
+    }
+
+    this.initSteps();
+  }
+
+  initSteps() {
+    const root = this.stepsRef.current;
+    if (!root) return;
+    const diagrams = root.querySelectorAll('[data-pp-diagram]');
+    const steps = root.querySelectorAll('[data-pp-step]');
+    if (!diagrams.length) return;
+
+    const show = (i) => diagrams.forEach((d, j) => {
+      const on = j === Number(i);
+      d.style.opacity = on ? '1' : '0';
+      d.style.transform = on ? 'none' : 'translateY(' + (j < i ? -14 : 14) + 'px)';
+      d.style.pointerEvents = on ? 'auto' : 'none';
+    });
+
+    if (!this.scrubOK) {
+      // degraded: reveal each diagram as its text step enters, no pin, no scrub
+      diagrams.forEach((d) => { d.style.opacity = '1'; d.style.transition = 'none'; });
+      root.querySelectorAll('[data-pp-lattice],[data-pp-ring]').forEach(e => { e.style.opacity = '1'; });
+      root.querySelectorAll('[data-pp-curve]').forEach(e => { e.style.strokeDashoffset = '0'; });
+      root.querySelectorAll('[data-pp-ray]').forEach(e => { e.setAttribute('opacity', '1'); });
+      steps.forEach((s) => ScrollTrigger.create({
+        trigger: s, start: 'top 88%', once: true,
+        onEnter: () => { s.style.animation = 'ppFade .6s ease both'; }
+      }));
+      return;
+    }
+
+    show(0);
+    steps.forEach((s) => {
+      ScrollTrigger.create({
+        trigger: s, start: 'top 55%', end: 'bottom 45%',
+        onEnter: () => show(s.dataset.ppStep),
+        onEnterBack: () => show(s.dataset.ppStep)
+      });
+    });
+
+    const lattice = root.querySelector('[data-pp-lattice]');
+    const ring = root.querySelector('[data-pp-ring]');
+    if (lattice) gsap.fromTo([lattice, ring], { opacity: 0 }, {
+      opacity: 1, ease: 'none',
+      scrollTrigger: { trigger: steps[0], start: 'top 70%', end: 'center 40%', scrub: true }
+    });
+    if (ring) gsap.to(ring, {
+      scale: 1, ease: 'none',
+      scrollTrigger: { trigger: steps[0], start: 'top 70%', end: 'bottom 50%', scrub: true }
+    });
+
+    const curves = root.querySelectorAll('[data-pp-curve]');
+    if (curves.length) gsap.to(curves, {
+      strokeDashoffset: 0, ease: 'none', stagger: 0.15,
+      scrollTrigger: { trigger: steps[1], start: 'top 72%', end: 'center 42%', scrub: true }
+    });
+
+    const rays = root.querySelectorAll('[data-pp-ray]');
+    if (rays.length) gsap.to(rays, {
+      attr: { opacity: 1 }, ease: 'none', stagger: 0.2,
+      scrollTrigger: { trigger: steps[2], start: 'top 72%', end: 'center 42%', scrub: true }
+    });
+  }
+
+  /* ---------- upload + inference ---------- */
+  onZone = () => this.fileRef.current && this.fileRef.current.click();
+  onZoneKey = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.onZone(); }
+  };
+  onDragOver = (e) => {
+    e.preventDefault();
+    if (this.zoneRef.current) { this.zoneRef.current.style.borderColor = '#4fd8c4'; this.zoneRef.current.style.background = '#131010'; }
+  };
+  onDragLeave = () => {
+    if (this.zoneRef.current) { this.zoneRef.current.style.borderColor = '#443c36'; this.zoneRef.current.style.background = '#100d0c'; }
+  };
+  onDrop = (e) => {
+    e.preventDefault();
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) this.analyse(f);
+  };
+  onPick = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (f) this.analyse(f);
+    e.target.value = '';
+  };
+  onSample = (e) => { e.stopPropagation(); this.analyse(null); };
+  onRetry = () => this.analyse(this.lastFile || null);
+  onReset = () => {
+    this.result = null;
+    this.setState({ phase: 'idle' });
+  };
+
+  analyse(file) {
+    this.lastFile = file;
+    if (this.objectUrl) { URL.revokeObjectURL(this.objectUrl); this.objectUrl = null; }
+    if (file) this.objectUrl = URL.createObjectURL(file);
+    this.meta = {
+      name: file ? file.name : 'specimen-01.jpg',
+      size: file ? (file.size / 1048576).toFixed(2) + ' MB' : '2048\u00d71365'
+    };
+    this.setState({ phase: 'loading' });
+
+    if (this.props.simulateError) {
+      setTimeout(() => this.setState({ phase: 'error' }), 1400);
+      return;
+    }
+
+    const endpoint = this.props.endpoint || '/predict';
+    const done = (r, live) => {
+      this.result = r; this.live = live;
+      this.setState({ phase: 'result' });
+    };
+    const demo = { probability: 0.874, verdict: 'Likely AI-generated', explanation: null };
+
+    if (file && typeof fetch === 'function') {
+      const fd = new FormData();
+      fd.append('image', file, file.name);
+      const t0 = performance.now();
+      fetch(endpoint, { method: 'POST', body: fd })
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(r.status)))
+        .then(j => done({ ...demo, ...j, ms: performance.now() - t0 }, true))
+        .catch(() => setTimeout(() => done(demo, false), 900));
+    } else {
+      setTimeout(() => done(demo, false), 1500);
+    }
+  }
+
+  animateResult() {
+    const r = this.result || { probability: 0.874 };
+    const pct = Math.round(r.probability * 1000) / 10;
+
+    if (this.imgRef.current && this.objectUrl) {
+      this.imgRef.current.src = this.objectUrl;
+      this.imgRef.current.style.display = 'block';
+    }
+    if (this.fileNameRef.current && this.meta) this.fileNameRef.current.textContent = this.meta.name;
+    if (this.sourceRef.current) {
+      this.sourceRef.current.textContent = (this.meta ? this.meta.size : '') +
+        ' \u00b7 ' + (this.live ? (r.ms / 1000).toFixed(2) + 's' : '1.14s \u00b7 demo response');
+      this.sourceRef.current.style.color = this.live ? '#6f6660' : '#c8892f';
+    }
+
+    requestAnimationFrame(() => {
+      if (this.barRef.current) this.barRef.current.style.width = pct + '%';
+    });
+
+    const el = this.pctRef.current;
+    if (!el) return;
+    if (this.reduced) { el.textContent = pct.toFixed(1) + '%'; return; }
+    const t0 = performance.now(), dur = 1500;
+    const tick = (now) => {
+      const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = (pct * e).toFixed(1) + '%';
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  onWipe = (e) => {
+    const v = e.target.value;
+    if (this.heatRef.current) this.heatRef.current.style.clipPath = 'inset(0 0 0 ' + v + '%)';
+  };
+
+  componentWillUnmount() {
+    if (this.objectUrl) URL.revokeObjectURL(this.objectUrl);
+    if (window.ScrollTrigger) ScrollTrigger.getAll().forEach(t => t.kill());
+  }
+
+  renderVals() {
+    const p = this.state.phase;
+    return {
+      isIdle: p === 'idle', isLoading: p === 'loading', isError: p === 'error', isResult: p === 'result',
+      fileRef: this.fileRef, zoneRef: this.zoneRef, panelRef: this.panelRef, imgRef: this.imgRef,
+      heatRef: this.heatRef, frameRef: this.frameRef, barRef: this.barRef, pctRef: this.pctRef,
+      loadBarRef: this.loadBarRef, fileNameRef: this.fileNameRef, sourceRef: this.sourceRef,
+      stepsRef: this.stepsRef, rowsRef: this.rowsRef,
+      onZone: this.onZone, onZoneKey: this.onZoneKey, onDragOver: this.onDragOver,
+      onDragLeave: this.onDragLeave, onDrop: this.onDrop, onPick: this.onPick,
+      onSample: this.onSample, onReset: this.onReset, onRetry: this.onRetry, onWipe: this.onWipe
+    };
+  }
+}
+</script>
+</body>
+</html>

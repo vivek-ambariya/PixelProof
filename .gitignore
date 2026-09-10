@@ -1,0 +1,37 @@
+# --- Checkpoints — never commit ---
+# The one deliberate exception is the tiny calibrated head in model/weights/
+# (.safetensors + .json, tens of KB), so a judge can predict from a fresh clone.
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.onnx
+
+# --- Datasets ---
+# Ignore everything under data/ EXCEPT the scripts that live there. `data/`
+# alone would stop git descending into the directory, so the negations below
+# would never be reached.
+data/*
+!data/prepare.py
+!data/make_smoke_data.py
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# --- Node ---
+# src/frontend/dist IS committed on purpose, so a judge needs no Node install.
+node_modules/
+
+# --- Scratch / OS ---
+.DS_Store
+*.log
+preds.csv
+runs/
+
+# --- Source archives dropped in the project root (100s of MB) ---
+*.zip
