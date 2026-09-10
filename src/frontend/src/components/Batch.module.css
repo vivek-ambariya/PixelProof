@@ -1,0 +1,63 @@
+.head { display: flex; align-items: end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.intro { margin: 16px 0 0; max-width: 50ch; color: var(--pp-text-3); font-size: 16px; line-height: 1.6; }
+
+.add {
+  background: var(--pp-teal);
+  border: none;
+  color: #0b0908;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 14px 22px;
+  cursor: pointer;
+  transition: var(--pp-dur-fast);
+}
+.add:hover { background: var(--pp-teal-hi); }
+.add:disabled { opacity: 0.45; cursor: default; }
+
+.table { margin-top: 44px; border: 1px solid var(--pp-rule); background: var(--pp-panel); overflow-x: auto; }
+.row {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr 1.6fr 2fr 1.2fr;
+  gap: 16px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--pp-rule-soft);
+  align-items: center;
+  font-family: var(--pp-mono);
+  font-size: 13px;
+  min-width: 820px;
+}
+.header {
+  composes: row;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--pp-rule);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  color: var(--pp-muted-2);
+  text-transform: uppercase;
+}
+.name { color: var(--pp-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dim { color: var(--pp-muted); }
+.right { text-align: right; font-size: 11px; letter-spacing: 0.09em; }
+
+.meter { display: flex; align-items: center; gap: 12px; }
+.meterTrack { flex: 1; height: 4px; background: var(--pp-rule); display: block; position: relative; }
+.meterFill { position: absolute; left: 0; top: 0; bottom: 0; display: block; }
+.value { font-style: normal; min-width: 52px; }
+
+.ai { color: var(--pp-amber); }
+.real { color: var(--pp-teal); }
+.unsure { color: var(--pp-muted); }
+.skipped { color: var(--pp-muted-2); }
+
+.footNote {
+  margin-top: 14px;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--pp-muted-2);
+}
+
+.empty { padding: 40px 22px; text-align: center; color: var(--pp-muted); font-family: var(--pp-mono); font-size: 12px; letter-spacing: 0.1em; }

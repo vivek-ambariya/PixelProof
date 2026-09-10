@@ -1,0 +1,28 @@
+.wrap { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 64px; align-items: end; }
+.body { margin: 22px 0 0; max-width: 50ch; color: var(--pp-text-3); font-size: 16px; line-height: 1.65; }
+.stat {
+  font-family: var(--pp-mono);
+  font-size: 132px;
+  font-weight: 700;
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  color: var(--pp-amber);
+}
+.pctSign { font-size: 0.42em; letter-spacing: 0; }
+.statNote {
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--pp-rule);
+  font-family: var(--pp-mono);
+  font-size: 12px;
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+  color: var(--pp-muted);
+  max-width: 38ch;
+}
+.emph { color: var(--pp-text); }
+
+@media (max-width: 900px) {
+  .wrap { grid-template-columns: 1fr; gap: 30px; }
+  .stat { font-size: 76px; }
+}

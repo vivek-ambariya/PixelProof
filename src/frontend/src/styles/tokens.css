@@ -1,0 +1,61 @@
+/* Design tokens taken from design/PixelProof.dc.html. Every colour, font and
+   motion duration in the app reads from here rather than being hard-coded. */
+:root {
+  /* Ground and ink */
+  --pp-bg: #0b0908;
+  --pp-panel: #100d0c;
+  --pp-panel-deep: #0d0b0a;
+  --pp-rule: #241f1c;
+  --pp-rule-soft: #1a1614;
+  --pp-rule-strong: #443c36;
+
+  --pp-text: #ece7e1;
+  --pp-text-2: #c6bfb8;
+  --pp-text-3: #a8a09a;
+  --pp-muted: #8a807a;
+  --pp-muted-2: #6f6660;
+  --pp-muted-3: #4a4340;
+
+  /* Teal is the interactive colour; amber carries heat and AI-likelihood. */
+  --pp-teal: #4fd8c4;
+  --pp-teal-hi: #7fe8d8;
+  --pp-amber: #e0a13a;
+  --pp-amber-hi: #eeb45c;
+  --pp-amber-deep: #c8892f;
+  --pp-heat-low: #2878be;
+  --pp-warn-rule: #6b3a1e;
+  --pp-warn-bg: #150f0c;
+
+  /* Type */
+  --pp-sans: Archivo, "Helvetica Neue", system-ui, sans-serif;
+  --pp-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Motion. Zeroed wholesale under prefers-reduced-motion below. */
+  --pp-dur-fast: 0.18s;
+  --pp-dur: 0.45s;
+  --pp-dur-slow: 1.5s;
+  --pp-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  --pp-max: 1240px;
+  --pp-gutter: 56px;
+}
+
+@media (max-width: 900px) {
+  :root { --pp-gutter: 20px; }
+}
+
+/* One place turns motion off. Components also branch in JS via
+   useReducedMotion so GSAP and framer-motion honour it too. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --pp-dur-fast: 0.001s;
+    --pp-dur: 0.001s;
+    --pp-dur-slow: 0.001s;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+    scroll-behavior: auto !important;
+  }
+}

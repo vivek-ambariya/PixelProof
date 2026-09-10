@@ -1,6 +1,7 @@
 # --- Checkpoints — never commit ---
-# The one deliberate exception is the tiny calibrated head in model/weights/
-# (.safetensors + .json, tens of KB), so a judge can predict from a fresh clone.
+# The one deliberate exception is the small calibrated head in model/weights/
+# (head.safetensors ~770 KB + two small .json), so a judge can predict from a
+# fresh clone without training. The frozen backbone is fetched by timm instead.
 *.pth
 *.pt
 *.ckpt

@@ -188,17 +188,28 @@ def cache_key(backbone: str, img_size: int, mean, std, n_variants: int) -> str:
 @torch.no_grad()
 def compute_features(net: PixelProofNet, df: pd.DataFrame, n_variants: int,
                      device: torch.device, batch_size: int, num_workers: int,
-                     label: str) -> np.ndarray:
-    """Return (N, n_variants, D) float16 features."""
+                     label: str, half: bool = True) -> np.ndarray:
+    """Return (N, n_variants, D) float16 features.
+
+    ``half`` runs the backbone under autocast fp16. Measured on an M2 this lifts
+    CLIP ViT-B/16 from 22 to 30 img/s, and since the cache is stored as float16
+    anyway it costs no precision that survives storage. Autocast rather than
+    ``.half()`` on the weights, so the model is left untouched for later use.
+    """
     out = np.zeros((len(df), n_variants, net.feat_dim), dtype=np.float16)
     net.eval()
+    use_ac = half and device.type in ("mps", "cuda")
     for k in range(n_variants):
         tf = build_variant_transform(k, net.img_size, net.mean, net.std)
         loader = DataLoader(ImageRows(df, tf), batch_size=batch_size, shuffle=False,
                             num_workers=num_workers, drop_last=False)
         done, t0 = 0, time.time()
         for x, _ in loader:
-            f = net.forward_features(x.to(device))
+            if use_ac:
+                with torch.autocast(device_type=device.type, dtype=torch.float16):
+                    f = net.forward_features(x.to(device))
+            else:
+                f = net.forward_features(x.to(device))
             out[done:done + len(f), k] = f.detach().float().cpu().numpy().astype(np.float16)
             done += len(f)
             if done % (batch_size * 40) == 0:
@@ -212,7 +223,8 @@ def compute_features(net: PixelProofNet, df: pd.DataFrame, n_variants: int,
 
 def get_features(net: PixelProofNet, df: pd.DataFrame, split: str, n_variants: int,
                  cache_dir: Path, device: torch.device, batch_size: int,
-                 num_workers: int, use_cache: bool = True) -> tuple[np.ndarray, np.ndarray]:
+                 num_workers: int, use_cache: bool = True,
+                 half: bool = True) -> tuple[np.ndarray, np.ndarray]:
     """Load features from cache, or compute and store them."""
     key = cache_key(net.backbone_name, net.img_size, net.mean, net.std, n_variants)
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -225,7 +237,8 @@ def get_features(net: PixelProofNet, df: pd.DataFrame, split: str, n_variants: i
             return z["feats"], z["labels"]
         print(f"  cache size mismatch, recomputing {f.name}")
     print(f"  computing features for {split}: {len(df)} images x {n_variants} variant(s)")
-    feats = compute_features(net, df, n_variants, device, batch_size, num_workers, split)
+    feats = compute_features(net, df, n_variants, device, batch_size, num_workers,
+                             split, half=half)
     if use_cache:
         np.savez(f, feats=feats, labels=labels)
         print(f"  cached -> {f.name} ({f.stat().st_size / 1e6:.0f} MB)")
@@ -323,6 +336,9 @@ def main() -> None:
     ap.add_argument("--device", default="auto")
     ap.add_argument("--limit-train", type=int, default=0,
                     help="cap the number of training rows (for quick runs)")
+    ap.add_argument("--no-half", action="store_true",
+                    help="disable autocast fp16 during feature extraction "
+                         "(slower; fp32 measured 22 img/s vs 30 on an M2)")
     ap.add_argument("--overfit", type=int, default=0,
                     help="wiring check: fit this many images with no augmentation "
                          "and no dropout; loss must approach zero")
@@ -372,7 +388,7 @@ def main() -> None:
         if net.frozen:
             feats, labels = get_features(net, df, "overfit", 1, Path(args.cache_dir),
                                          device, args.batch_size, args.num_workers,
-                                         use_cache=False)
+                                         use_cache=False, half=not args.no_half)
             ds = CachedFeatures(feats, labels, train=False, seed=args.seed)
             module = net.head
         else:
@@ -385,8 +401,10 @@ def main() -> None:
                                 lr=lr, weight_decay=0.0)
         crit = nn.BCEWithLogitsLoss()
         epochs = max(args.epochs, 60) if net.frozen else args.epochs
-        print(f"  fitting head with lr={lr}, no dropout, no augmentation, "
-              f"{epochs} epochs")
+        what = "head only" if net.frozen else "whole network end to end"
+        n_fit = sum(p.numel() for p in module.parameters() if p.requires_grad)
+        print(f"  fitting {what} ({n_fit:,} params) with lr={lr}, "
+              f"no dropout, no augmentation, {epochs} epochs")
         module.train()
         hist = []
         for ep in range(1, epochs + 1):
@@ -451,12 +469,14 @@ def main() -> None:
         print(f"cached path: precomputing features (K={K_VARIANTS} for train, "
               f"1 for eval)")
         tr_f, tr_y = get_features(net, splits["train"], "train", K_VARIANTS, cache_dir,
-                                  device, args.batch_size, args.num_workers)
+                                  device, args.batch_size, args.num_workers,
+                                  half=not args.no_half)
         train_ds = CachedFeatures(tr_f, tr_y, train=True, seed=args.seed)
         eval_loaders = {}
         for n in eval_splits:
             f, y = get_features(net, splits[n], n, 1, cache_dir, device,
-                                args.batch_size, args.num_workers)
+                                args.batch_size, args.num_workers,
+                                half=not args.no_half)
             eval_loaders[n] = DataLoader(CachedFeatures(f, y, train=False),
                                          batch_size=512, shuffle=False, num_workers=0)
         module = net.head
@@ -570,8 +590,10 @@ def main() -> None:
     print(f"best {monitor} AUC {best:.4f} at epoch {best_ep}")
     print(f"checkpoint -> {ckpt_path}")
     print(f"log        -> {log_path}")
-    print("\nNext: python model/calibrate.py --checkpoint "
-          f"{ckpt_path.relative_to(ROOT)}")
+    # Not relative_to: --out may point outside the project, and that raises.
+    shown = (ckpt_path.resolve().relative_to(ROOT)
+             if ckpt_path.resolve().is_relative_to(ROOT) else ckpt_path.resolve())
+    print(f"\nNext: python model/calibrate.py --checkpoint {shown}")
 
 
 if __name__ == "__main__":

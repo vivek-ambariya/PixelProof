@@ -1,0 +1,19 @@
+.footer { padding: 64px 0 72px; border-top: 1px solid var(--pp-rule-soft); }
+.wrap { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 64px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.mark { width: 11px; height: 11px; border: 1px solid var(--pp-teal); position: relative; flex: none; }
+.mark::after { content: ''; position: absolute; inset: 3px; background: var(--pp-teal); }
+.wordmark { font-family: var(--pp-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.18em; }
+.blurb { margin: 20px 0 0; max-width: 44ch; font-size: 15px; line-height: 1.65; color: var(--pp-text-3); }
+.links { margin-top: 22px; display: flex; gap: 18px; font-family: var(--pp-mono); font-size: 11px; letter-spacing: 0.11em; text-transform: uppercase; flex-wrap: wrap; }
+.cards { display: flex; flex-direction: column; gap: 20px; }
+.card { border-left: 1px solid var(--pp-rule-strong); padding-left: 20px; }
+.cardAmber { border-left-color: var(--pp-amber-deep); }
+.cardTeal { border-left-color: var(--pp-teal); }
+.cardLabel { font-family: var(--pp-mono); font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; }
+.amber { color: var(--pp-amber-deep); }
+.teal { color: var(--pp-teal); }
+.cardBody { margin: 9px 0 0; font-size: 14px; line-height: 1.7; color: var(--pp-text-3); }
+.strong { color: var(--pp-text-2); }
+.rule { margin-top: 56px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-family: var(--pp-mono); font-size: 10px; letter-spacing: 0.11em; color: var(--pp-muted-3); text-transform: uppercase; }
+@media (max-width: 900px) { .wrap { grid-template-columns: 1fr; gap: 32px; } }

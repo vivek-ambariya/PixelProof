@@ -1,0 +1,46 @@
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 0 0;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pp-muted);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+
+.mark {
+  width: 11px; height: 11px;
+  border: 1px solid var(--pp-teal);
+  position: relative;
+  flex: none;
+}
+.mark::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: var(--pp-teal);
+}
+
+.wordmark { color: var(--pp-text); font-weight: 700; letter-spacing: 0.18em; }
+
+.meta { display: flex; gap: 26px; align-items: center; }
+.value { color: var(--pp-text); }
+.online { color: var(--pp-teal); }
+.offline { color: var(--pp-amber); }
+
+.link {
+  color: var(--pp-muted);
+  border: none;
+  letter-spacing: 0.12em;
+}
+.link:hover { color: var(--pp-text); border: none; }
+
+/* The two status readouts are the first thing to go when space is tight. */
+@media (max-width: 900px) {
+  .hideSm { display: none; }
+}

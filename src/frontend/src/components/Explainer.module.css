@@ -1,0 +1,116 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: start;
+  margin-top: 64px;
+}
+
+.stickyCol { position: sticky; top: 88px; height: min(74vh, 560px); }
+
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--pp-rule);
+  background: var(--pp-panel);
+}
+
+.figure {
+  position: absolute;
+  inset: 0;
+  padding: 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  opacity: 0;
+  transition: opacity var(--pp-dur), transform var(--pp-dur);
+}
+.figureFirst { opacity: 1; }
+
+.figLabel {
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  color: var(--pp-muted-2);
+}
+
+.canvas { flex: 1; position: relative; background: #0b0908; overflow: hidden; }
+
+.figCaption {
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--pp-muted);
+}
+.hot { color: var(--pp-amber); }
+.cool { color: var(--pp-teal); }
+
+.step {
+  min-height: min(74vh, 560px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px 0;
+}
+.stepKicker {
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--pp-amber-deep);
+}
+.stepTitle {
+  margin: 14px 0 0;
+  font-size: 32px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+.stepBody {
+  margin: 16px 0 0;
+  color: var(--pp-text-3);
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 44ch;
+}
+
+/* Under 768px the pinned stage is abandoned: each figure sits inline above its
+   own step and simply fades in. Matches the brief's degrade-to-fades rule. */
+@media (max-width: 768px) {
+  .grid { grid-template-columns: 1fr; gap: 28px; margin-top: 36px; }
+  .stickyCol { position: static; height: auto; display: none; }
+  .step { min-height: 0; padding: 26px 0; }
+  .inlineFigure {
+    position: relative;
+    inset: auto;
+    opacity: 1;
+    height: 240px;
+    border: 1px solid var(--pp-rule);
+    background: var(--pp-panel);
+    margin-bottom: 18px;
+    padding: 20px;
+  }
+  .stepTitle { font-size: 24px; }
+}
+@media (min-width: 769px) {
+  .inlineFigure { display: none; }
+}
+
+/* --- figure internals --- */
+.spectrum { position: absolute; inset: 0; background: radial-gradient(48% 48% at 50% 50%, rgba(236,231,225,.22), rgba(236,231,225,.02) 62%, transparent 72%); }
+.lattice {
+  position: absolute; inset: 0; opacity: 0;
+  background-image: radial-gradient(circle, rgba(224,161,58,.95) 1.4px, transparent 1.6px);
+  background-size: 44px 44px;
+  background-position: center;
+}
+.axisV { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(236,231,225,.12); }
+.axisH { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(236,231,225,.12); }
+
+.noiseSvg, .lightSvg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.legendLine {
+  position: absolute; left: 14px;
+  font-family: var(--pp-mono); font-size: 9px; letter-spacing: 0.1em;
+}
+.legendSensor { top: 12px; color: var(--pp-teal); }
+.legendGen { top: 30px; color: var(--pp-amber); }

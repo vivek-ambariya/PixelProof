@@ -47,6 +47,16 @@ ROOT = Path(__file__).resolve().parent.parent
 TARGET_FPR = 0.05
 
 
+def rel_to_root(p: Path) -> str:
+    """Path relative to the project root when it is inside it, else absolute.
+
+    `Path.relative_to` raises for anything outside the root, and being absolute
+    is not the same as being under ROOT -- a checkpoint kept in /tmp is both.
+    """
+    p = Path(p).resolve()
+    return str(p.relative_to(ROOT)) if p.is_relative_to(ROOT) else str(p)
+
+
 @torch.no_grad()
 def collect_logits(net: PixelProofNet, df: pd.DataFrame, device: torch.device,
                    batch_size: int, num_workers: int) -> tuple[np.ndarray, np.ndarray]:
@@ -201,8 +211,7 @@ def main() -> None:
 
     out = Path(args.out) if args.out else ckpt_path.parent / f"{backbone}_calibration.json"
     payload = {
-        "checkpoint": str(ckpt_path.relative_to(ROOT)) if ckpt_path.is_absolute()
-                      else str(ckpt_path),
+        "checkpoint": rel_to_root(ckpt_path),
         "backbone": backbone,
         "fitted_on_split": args.split,
         "n_images": int(len(df)),

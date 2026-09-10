@@ -1,0 +1,62 @@
+.zone {
+  cursor: pointer;
+  border: 1px dashed var(--pp-rule-strong);
+  background: var(--pp-panel);
+  padding: 52px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 352px;
+  text-align: center;
+  transition: border-color var(--pp-dur-fast), background var(--pp-dur-fast);
+}
+.zone:hover { border-color: var(--pp-teal); background: #131010; }
+
+/* The dropzone is a primary control, so its focus ring is deliberately
+   stronger than the global one. */
+.zone:focus-visible {
+  outline: 2px solid var(--pp-teal);
+  outline-offset: 3px;
+  border-color: var(--pp-teal);
+}
+
+.dragging {
+  border-color: var(--pp-teal);
+  background: #131010;
+}
+
+.plus { width: 46px; height: 46px; border: 1px solid var(--pp-teal); position: relative; margin-bottom: 24px; flex: none; }
+.plus::before, .plus::after { content: ''; position: absolute; background: var(--pp-teal); }
+.plus::before { left: 50%; top: 12px; bottom: 12px; width: 1px; }
+.plus::after { top: 50%; left: 12px; right: 12px; height: 1px; }
+
+.label { font-size: 17px; font-weight: 500; letter-spacing: -0.01em; }
+
+.hint {
+  margin-top: 9px;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  color: var(--pp-muted-2);
+  line-height: 1.7;
+}
+
+.sample {
+  margin-top: 28px;
+  background: transparent;
+  border: 1px solid var(--pp-rule-strong);
+  color: var(--pp-text-3);
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 11px 18px;
+  cursor: pointer;
+  transition: var(--pp-dur-fast);
+}
+.sample:hover { border-color: var(--pp-muted); color: var(--pp-text); }
+
+@media (max-width: 900px) {
+  .zone { min-height: 260px; padding: 36px 20px; }
+}

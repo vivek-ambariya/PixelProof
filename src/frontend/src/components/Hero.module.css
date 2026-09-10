@@ -1,0 +1,138 @@
+.hero { padding: 76px 0 92px; }
+
+/* Asymmetric two-column split, matching the reference. The dropzone lives in
+   the right column so it is visible without scrolling. */
+.wrap {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.kicker {
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--pp-amber-deep);
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 20px 0 0;
+  font-size: 82px;
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
+
+.lede {
+  margin: 26px 0 0;
+  max-width: 46ch;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--pp-text-3);
+}
+
+.stats {
+  display: flex;
+  gap: 30px;
+  margin: 38px 0 0;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  color: var(--pp-muted-2);
+  flex-wrap: wrap;
+}
+.statValue { color: var(--pp-text); font-size: 20px; letter-spacing: -0.01em; }
+
+/* --- loading --- */
+.loading {
+  border: 1px solid var(--pp-rule);
+  background: var(--pp-panel);
+  min-height: 352px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  position: relative;
+}
+.sweep {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--pp-teal), transparent);
+  animation: ppSweep 1.5s linear infinite;
+}
+@keyframes ppSweep {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(352px); }
+}
+.loadingLabel {
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--pp-teal);
+}
+.steps {
+  font-family: var(--pp-mono);
+  font-size: 12px;
+  line-height: 2.1;
+  color: var(--pp-muted);
+}
+.stepActive { color: var(--pp-text); }
+.bar { height: 2px; background: var(--pp-rule); overflow: hidden; }
+.barFill { height: 100%; background: var(--pp-teal); }
+
+/* --- error --- */
+.error {
+  border: 1px solid var(--pp-warn-rule);
+  background: var(--pp-warn-bg);
+  min-height: 352px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+.errorCode {
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--pp-amber);
+}
+.errorTitle { font-size: 19px; font-weight: 500; letter-spacing: -0.01em; }
+.errorBody { margin: 0; color: var(--pp-text-3); font-size: 15px; line-height: 1.6; max-width: 42ch; }
+.errorActions { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+.primary {
+  background: var(--pp-amber);
+  border: none;
+  color: #100d0c;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+.primary:hover { background: var(--pp-amber-hi); }
+.ghost {
+  background: transparent;
+  border: 1px solid var(--pp-rule-strong);
+  color: var(--pp-text-3);
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+.ghost:hover { color: var(--pp-text); border-color: var(--pp-muted); }
+
+@media (max-width: 900px) {
+  .hero { padding: 44px 0 56px; }
+  .wrap { grid-template-columns: 1fr; gap: 32px; }
+  .title { font-size: 44px; }
+  .lede { font-size: 16px; }
+}
