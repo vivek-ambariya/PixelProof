@@ -1,0 +1,82 @@
+{
+  "model": {
+    "backbone": "clip_vit_b16",
+    "weights": "clip_vit_b16_best.pth",
+    "weights_kind": "checkpoint",
+    "device": "mps",
+    "img_size": 224,
+    "calibrated": true,
+    "temperature": 0.7813,
+    "threshold": 0.7833,
+    "train_epoch": 5
+  },
+  "splits": {
+    "test": {
+      "n": 20000,
+      "ai_frac": 0.5,
+      "threshold": 0.7833248972892761,
+      "roc_auc": 0.9851164,
+      "accuracy": 0.93625,
+      "macro_f1": 0.93623631487849,
+      "fpr": 0.0491,
+      "tpr_recall": 0.9216,
+      "precision_ai": 0.9494179458123004,
+      "recall_ai": 0.9216,
+      "f1_real": 0.9371704528655201,
+      "f1_ai": 0.9353021768914599,
+      "confusion_matrix": {
+        "tn": 9509,
+        "fp": 491,
+        "fn": 784,
+        "tp": 9216
+      },
+      "mean_prob_real": 0.16869769990444183,
+      "mean_prob_ai": 0.9416826367378235
+    },
+    "val_unseen_content": {
+      "n": 20000,
+      "ai_frac": 0.5,
+      "threshold": 0.7833248972892761,
+      "roc_auc": 0.97234092,
+      "accuracy": 0.8986,
+      "macro_f1": 0.8982036293638719,
+      "fpr": 0.039,
+      "tpr_recall": 0.8362,
+      "precision_ai": 0.9554387568555759,
+      "recall_ai": 0.8362,
+      "f1_real": 0.9045557228915663,
+      "f1_ai": 0.8918515358361775,
+      "confusion_matrix": {
+        "tn": 9610,
+        "fp": 390,
+        "fn": 1638,
+        "tp": 8362
+      },
+      "mean_prob_real": 0.1811678409576416,
+      "mean_prob_ai": 0.886289656162262
+    },
+    "val": {
+      "n": 8000,
+      "ai_frac": 0.5,
+      "threshold": 0.7833248972892761,
+      "roc_auc": 0.9880650000000001,
+      "accuracy": 0.94475,
+      "macro_f1": 0.9447480109283934,
+      "fpr": 0.04925,
+      "tpr_recall": 0.93875,
+      "precision_ai": 0.9501518218623481,
+      "recall_ai": 0.93875,
+      "f1_real": 0.945079522862823,
+      "f1_ai": 0.9444164989939637,
+      "confusion_matrix": {
+        "tn": 3803,
+        "fp": 197,
+        "fn": 245,
+        "tp": 3755
+      },
+      "mean_prob_real": 0.1723136305809021,
+      "mean_prob_ai": 0.9546469449996948
+    }
+  },
+  "limit_per_split": null
+}

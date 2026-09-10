@@ -1,0 +1,41 @@
+{
+  "checkpoint": "model/checkpoints/resnet50_best.pth",
+  "backbone": "resnet50",
+  "fitted_on_split": "val",
+  "n_images": 8000,
+  "temperature": 0.9006307125091553,
+  "target_fpr": 0.05,
+  "threshold": 0.5287237167358398,
+  "nll_before": 0.10188151150941849,
+  "nll_after": 0.10117984563112259,
+  "ece_before": 0.01628585456323344,
+  "ece_after": 0.015097762311517727,
+  "auc": 0.9940958125,
+  "metrics_at_threshold": {
+    "threshold": 0.5287237167358398,
+    "accuracy": 0.960875,
+    "fpr": 0.05,
+    "tpr_recall": 0.97175,
+    "precision": 0.9510643503792513,
+    "confusion_matrix": {
+      "tn": 3800,
+      "fp": 200,
+      "fn": 113,
+      "tp": 3887
+    }
+  },
+  "metrics_at_0.5": {
+    "threshold": 0.5,
+    "accuracy": 0.9595,
+    "fpr": 0.0545,
+    "tpr_recall": 0.9735,
+    "precision": 0.9469844357976653,
+    "confusion_matrix": {
+      "tn": 3782,
+      "fp": 218,
+      "fn": 106,
+      "tp": 3894
+    }
+  },
+  "note": "probability = sigmoid(logit / temperature); verdict is 'Likely AI-generated' when probability >= threshold, else 'Likely real'"
+}
