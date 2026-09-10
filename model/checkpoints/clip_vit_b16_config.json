@@ -1,0 +1,83 @@
+{
+  "data": "/Users/ambariyavivek/vivek college/PixelProof/data/csv",
+  "backbone": "clip_vit_b16",
+  "epochs": 20,
+  "batch_size": 64,
+  "lr": null,
+  "weight_decay": 0.0001,
+  "warmup_frac": 0.1,
+  "patience": 5,
+  "out": "/Users/ambariyavivek/vivek college/PixelProof/model/checkpoints",
+  "cache_dir": "/Users/ambariyavivek/vivek college/PixelProof/data/cache",
+  "num_workers": 4,
+  "seed": 42,
+  "device": "mps",
+  "limit_train": 24000,
+  "no_half": false,
+  "overfit": 0,
+  "monitor_split": "val_unseen_content",
+  "k_variants": 4,
+  "variant_spec": [
+    {
+      "name": "clean",
+      "ops": []
+    },
+    {
+      "name": "jpeg_q40",
+      "ops": [
+        {
+          "t": "ImageCompression",
+          "quality_range": [
+            40,
+            40
+          ]
+        }
+      ]
+    },
+    {
+      "name": "downscale_upscale",
+      "ops": [
+        {
+          "t": "Downscale",
+          "scale_range": [
+            0.5,
+            0.5
+          ]
+        }
+      ]
+    },
+    {
+      "name": "blur",
+      "ops": [
+        {
+          "t": "GaussianBlur",
+          "blur_limit": [
+            3,
+            3
+          ],
+          "sigma_limit": [
+            1.0,
+            1.0
+          ]
+        }
+      ]
+    }
+  ],
+  "lr_used": 0.001,
+  "feat_dim": 768,
+  "img_size": 224,
+  "mean": [
+    0.48145466,
+    0.4578275,
+    0.40821073
+  ],
+  "std": [
+    0.26862954,
+    0.26130258,
+    0.27577711
+  ],
+  "total_params": 85996545,
+  "trainable_params": 197121,
+  "pos_weight": null,
+  "train_rows": 24000
+}

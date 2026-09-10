@@ -1,0 +1,38 @@
+{
+  "data": "/Users/ambariyavivek/vivek college/PixelProof/data/csv",
+  "backbone": "resnet50",
+  "epochs": 8,
+  "batch_size": 32,
+  "lr": null,
+  "weight_decay": 0.0001,
+  "warmup_frac": 0.1,
+  "patience": 5,
+  "out": "/Users/ambariyavivek/vivek college/PixelProof/model/checkpoints",
+  "cache_dir": "/Users/ambariyavivek/vivek college/PixelProof/data/cache",
+  "num_workers": 4,
+  "seed": 42,
+  "device": "mps",
+  "limit_train": 12000,
+  "no_half": false,
+  "overfit": 0,
+  "monitor_split": "val_unseen_content",
+  "k_variants": 0,
+  "variant_spec": [],
+  "lr_used": 0.0001,
+  "feat_dim": 2048,
+  "img_size": 224,
+  "mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "total_params": 24032833,
+  "trainable_params": 24032833,
+  "pos_weight": null,
+  "train_rows": 12000
+}

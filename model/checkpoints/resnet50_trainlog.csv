@@ -1,0 +1,2 @@
+epoch,train_loss,lr,seconds,val_loss,val_auc,val_unseen_content_loss,val_unseen_content_auc
+1,0.424217,9.981e-05,724.5,0.142815,0.988494,0.276992,0.957019
