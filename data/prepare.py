@@ -47,6 +47,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 import pandas as pd
+from PIL import Image
 
 # Project root is the parent of the directory holding this file.
 ROOT = Path(__file__).resolve().parent.parent
@@ -63,6 +64,9 @@ CIFAR10_CLASSES = [
 COLUMNS = ["path", "label", "generator", "source", "content_class", "content_group"]
 
 _GROUP_RE = re.compile(r"\((\d+)\)\s*$")
+
+# Files rejected as undecodable during indexing, reported at the end of a run.
+SKIPPED: list[str] = []
 
 
 def _content_group(stem: str) -> int:
@@ -83,7 +87,25 @@ def _rel(p: Path) -> str:
         return str(p.resolve())
 
 
-def index_cifake(cifake_root: Path) -> list[dict]:
+def _readable(p: Path) -> bool:
+    """True if PIL can decode the file's header.
+
+    Hand-dropped generator folders arrive over AirDrop/zip/cloud sync, and macOS
+    transfers routinely leave 176-byte AppleDouble resource-fork stubs carrying an
+    image extension. Those files look real to a suffix check and then blow up
+    mid-epoch inside the DataLoader. Catching them here keeps every path in the
+    CSVs guaranteed-decodable, which is the contract dataset.py relies on.
+    ``Image.open`` alone reads just the header, so this is cheap.
+    """
+    try:
+        with Image.open(p) as im:
+            im.size  # touching size forces the header parse; full decode not needed
+        return True
+    except Exception:
+        return False
+
+
+def index_cifake(cifake_root: Path, verify: bool = True) -> list[dict]:
     """Index a CIFAKE tree. Returns rows tagged with their origin split."""
     rows: list[dict] = []
     for origin in ("train", "test"):
@@ -93,6 +115,9 @@ def index_cifake(cifake_root: Path) -> list[dict]:
                 continue
             for f in sorted(d.iterdir()):
                 if f.suffix.lower() not in IMAGE_EXTS:
+                    continue
+                if verify and not _readable(f):
+                    SKIPPED.append(str(f))
                     continue
                 g = _content_group(f.stem)
                 rows.append({
@@ -108,7 +133,7 @@ def index_cifake(cifake_root: Path) -> list[dict]:
     return rows
 
 
-def index_generic(raw_root: Path) -> list[dict]:
+def index_generic(raw_root: Path, verify: bool = True) -> list[dict]:
     """Index the generic convention: raw/real/<source>/** and raw/ai/<generator>/**."""
     rows: list[dict] = []
     for top, label in (("real", 0), ("ai", 1)):
@@ -118,6 +143,9 @@ def index_generic(raw_root: Path) -> list[dict]:
         for bucket in sorted(p for p in base.iterdir() if p.is_dir()):
             for f in sorted(bucket.rglob("*")):
                 if not f.is_file() or f.suffix.lower() not in IMAGE_EXTS:
+                    continue
+                if verify and not _readable(f):
+                    SKIPPED.append(str(f))
                     continue
                 rows.append({
                     "path": _rel(f),
@@ -228,6 +256,10 @@ def main() -> None:
                     help="if >0, subsample each split to at most this many rows "
                          "(for smoke tests; class balance preserved)")
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--no-verify", action="store_true",
+                    help="skip the decodability check on every image. The check "
+                         "costs about a minute on 120k files but is what keeps "
+                         "undecodable transfer artefacts out of the CSVs.")
     args = ap.parse_args()
 
     rng = random.Random(args.seed)
@@ -238,8 +270,8 @@ def main() -> None:
     rows: list[dict] = []
     cifake_root = raw_root / "cifake"
     if cifake_root.is_dir():
-        rows += index_cifake(cifake_root)
-    rows += index_generic(raw_root)
+        rows += index_cifake(cifake_root, verify=not args.no_verify)
+    rows += index_generic(raw_root, verify=not args.no_verify)
     if not rows:
         raise SystemExit(
             f"no images found under {raw_root}. Expected either "
@@ -247,6 +279,13 @@ def main() -> None:
             f"{raw_root}/{{real,ai}}/<name>/."
         )
 
+    if SKIPPED:
+        print(f"SKIPPED {len(SKIPPED)} undecodable file(s); they are excluded from "
+              f"every split.")
+        for bad in SKIPPED[:5]:
+            print(f"    {bad}")
+        if len(SKIPPED) > 5:
+            print(f"    ... and {len(SKIPPED) - 5} more")
     print(f"indexed {len(rows)} images from {raw_root}")
     print(f"  by label     : {dict(Counter('ai' if r['label'] else 'real' for r in rows))}")
     print(f"  by generator : {dict(Counter(r['generator'] for r in rows if r['label']))}")

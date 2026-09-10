@@ -13,8 +13,7 @@
 # alone would stop git descending into the directory, so the negations below
 # would never be reached.
 data/*
-!data/prepare.py
-!data/make_smoke_data.py
+!data/*.py
 
 # --- Python ---
 __pycache__/
