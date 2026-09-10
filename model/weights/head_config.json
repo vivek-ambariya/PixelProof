@@ -1,0 +1,7 @@
+{
+  "backbone": "clip_vit_b16",
+  "epoch": 5,
+  "monitor_split": "val_unseen_content",
+  "monitor_auc": 0.97234,
+  "note": "trainable head only; the frozen backbone comes from timm"
+}

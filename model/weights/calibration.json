@@ -1,0 +1,41 @@
+{
+  "checkpoint": "model/checkpoints/clip_vit_b16_best.pth",
+  "backbone": "clip_vit_b16",
+  "fitted_on_split": "val",
+  "n_images": 8000,
+  "temperature": 0.7812614440917969,
+  "target_fpr": 0.05,
+  "threshold": 0.7833248972892761,
+  "nll_before": 0.18631093204021454,
+  "nll_after": 0.18048202991485596,
+  "ece_before": 0.06985391601826994,
+  "ece_after": 0.06364587964862585,
+  "auc": 0.9880594374999999,
+  "metrics_at_threshold": {
+    "threshold": 0.7833248972892761,
+    "accuracy": 0.944625,
+    "fpr": 0.05,
+    "tpr_recall": 0.93925,
+    "precision": 0.9494566590851655,
+    "confusion_matrix": {
+      "tn": 3800,
+      "fp": 200,
+      "fn": 243,
+      "tp": 3757
+    }
+  },
+  "metrics_at_0.5": {
+    "threshold": 0.5,
+    "accuracy": 0.924125,
+    "fpr": 0.132,
+    "tpr_recall": 0.98025,
+    "precision": 0.8813216453135536,
+    "confusion_matrix": {
+      "tn": 3472,
+      "fp": 528,
+      "fn": 79,
+      "tp": 3921
+    }
+  },
+  "note": "probability = sigmoid(logit / temperature); verdict is 'Likely AI-generated' when probability >= threshold, else 'Likely real'"
+}

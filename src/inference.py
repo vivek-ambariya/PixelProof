@@ -67,6 +67,12 @@ INCONCLUSIVE_HI = 0.65
 
 MAX_SIDE = 1600  # cap the long edge before Grad-CAM, to bound memory and time
 
+# Floor for the *rendered* overlay only. A 32x32 source (CIFAKE) otherwise
+# produces a 32x32 PNG that the browser has to scale up, and it reads as mush.
+# The analysis is unaffected -- the model always sees img_size, and the CAM is
+# still only as detailed as the 14x14 attention grid behind it.
+MIN_HEATMAP_SIDE = 384
+
 
 def _find_checkpoint() -> tuple[Path | None, str]:
     """Locate a usable checkpoint. Returns (path, kind)."""
@@ -271,8 +277,18 @@ class Predictor:
                 result["heatmap_error"] = f"{type(e).__name__}: {e}"
 
         if cam is not None and want_heatmap:
+            canvas, cam_for_overlay = work, cam
+            longest = max(work.size)
+            if longest < MIN_HEATMAP_SIDE:
+                scale = MIN_HEATMAP_SIDE / longest
+                canvas = work.resize(
+                    (max(1, round(work.width * scale)),
+                     max(1, round(work.height * scale))), Image.LANCZOS)
+                cam_for_overlay = cv2.resize(
+                    cam.astype(np.float32), canvas.size,
+                    interpolation=cv2.INTER_CUBIC).clip(0.0, 1.0)
             result["heatmap_base64"] = explain.to_base64_png(
-                explain.overlay_heatmap(work, cam))
+                explain.overlay_heatmap(canvas, cam_for_overlay))
 
         if want_explanation:
             if cam is not None:

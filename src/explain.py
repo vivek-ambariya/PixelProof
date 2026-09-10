@@ -299,6 +299,21 @@ def measure(image: Image.Image, cam: np.ndarray) -> dict:
     }
 
 
+def format_pct(p: float) -> str:
+    """Format a probability for display, without ever implying certainty.
+
+    A probability of 0.0002 renders as "0.0%" under plain rounding, which reads
+    as a definite answer -- exactly the claim this tool must not make. Values in
+    the extreme tails are floored and capped instead.
+    """
+    pct = p * 100.0
+    if pct < 0.1:
+        return "under 0.1%"
+    if pct > 99.9:
+        return "over 99.9%"
+    return f"{pct:.1f}%"
+
+
 def _phrase_list(names: list[str]) -> str:
     if not names:
         return "no single region"
@@ -385,7 +400,7 @@ def build_explanation(probability: float, image: Image.Image, cam: np.ndarray,
 
     # 5. The verdict sentence, then the standing caveat.
     verdict = "Likely AI-generated" if probability >= threshold else "Likely real"
-    parts.insert(0, f"{verdict}, at an estimated {probability * 100:.1f}% "
+    parts.insert(0, f"{verdict}, at an estimated {format_pct(probability)} "
                     f"probability of being AI-generated.")
     parts.append("Read this as a likelihood, not a finding.")
     return " ".join(parts), m
