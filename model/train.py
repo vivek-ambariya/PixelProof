@@ -600,7 +600,7 @@ def main() -> None:
         print("=" * 70)
 
         indexed_train_loader = create_indexed_dataloader(train_loader)
-        indexed_val_loader = create_indexed_dataloader(val_loader)
+        indexed_val_loader = create_indexed_dataloader(eval_loaders["val"])
 
         probe_trainer = ProbeTrainer(
             model=net,
