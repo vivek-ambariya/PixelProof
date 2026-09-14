@@ -7,7 +7,7 @@ import GateHowItWorks from './GateHowItWorks.jsx'
 import GateProof from './GateProof.jsx'
 import GateAbout from './GateAbout.jsx'
 import GateFaq from './GateFaq.jsx'
-import Footer from '../Footer.jsx'
+import GateFooter from './GateFooter.jsx'
 import { useReducedMotion } from '../../hooks/useReducedMotion.js'
 import { useGateReveal } from './useGateReveal.js'
 import s from './Gate.module.css'
@@ -60,6 +60,11 @@ export default function Gate({ onEnter }) {
     else el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
 
+  const scrollToTop = useCallback(() => {
+    if (lenisRef.current) lenisRef.current.scrollTo(0)
+    else window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
   return (
     <div className={s.gate} ref={rootRef}>
       <GateNav onEnter={onEnter} onNavigate={scrollTo} />
@@ -84,9 +89,7 @@ export default function Gate({ onEnter }) {
         </div>
       </section>
 
-      <div className="pp-shell">
-        <Footer />
-      </div>
+      <GateFooter onNavigate={scrollTo} onEnter={onEnter} onTop={scrollToTop} />
     </div>
   )
 }

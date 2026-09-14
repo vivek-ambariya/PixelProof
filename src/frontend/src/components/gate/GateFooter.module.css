@@ -1,0 +1,134 @@
+.footer {
+  border-top: 1px solid var(--pp-rule);
+  padding: 84px var(--pp-gutter) 32px;
+}
+
+.inner { max-width: var(--pp-max); margin: 0 auto; }
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+}
+
+.col { display: flex; flex-direction: column; align-items: flex-start; }
+
+.colLabel {
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--pp-muted-2);
+  margin-bottom: 26px;
+}
+
+/* Links and spec lines share a rhythm so the four columns read as one grid,
+   the way the reference does. */
+.link,
+.spec {
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 0 17px;
+  color: var(--pp-text-2);
+  text-align: left;
+}
+
+.link {
+  appearance: none;
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color var(--pp-dur-fast) var(--pp-ease);
+}
+.link:hover { color: var(--pp-teal); }
+
+.spec { color: var(--pp-muted); }
+
+.count {
+  font-family: var(--pp-mono);
+  font-style: normal;
+  font-size: 11px;
+  color: var(--pp-teal);
+  vertical-align: super;
+  margin-left: 2px;
+}
+
+.note {
+  margin: 62px 0 0;
+  padding-top: 34px;
+  border-top: 1px solid var(--pp-rule);
+  max-width: 64ch;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--pp-muted);
+}
+
+.claims {
+  margin: 30px 0 0;
+  display: flex;
+  gap: 34px;
+  flex-wrap: wrap;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  color: var(--pp-muted-2);
+}
+
+/* The wordmark is the opposite of the page's display type: as thin and wide as
+   the headlines are heavy and condensed. */
+.wordmarkWrap {
+  margin: 46px 0 0;
+  padding-top: 34px;
+  border-top: 1px solid var(--pp-rule);
+  overflow: hidden;
+}
+
+.wordmark {
+  display: block;
+  font-family: var(--pp-display);
+  font-weight: 200;
+  font-stretch: 100%;
+  font-size: clamp(44px, 14.4vw, 212px);
+  line-height: 0.84;
+  letter-spacing: -0.035em;
+  color: var(--pp-text);
+  white-space: nowrap;
+}
+
+.bottom {
+  margin: 26px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  color: var(--pp-muted-2);
+}
+
+.top {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  color: var(--pp-muted-2);
+  transition: color var(--pp-dur-fast) var(--pp-ease);
+}
+.top:hover { color: var(--pp-text); }
+
+@media (max-width: 900px) {
+  .footer { padding: 56px var(--pp-gutter) 28px; }
+  .columns { grid-template-columns: repeat(2, 1fr); gap: 36px 24px; }
+  .note { margin-top: 44px; }
+  .claims { gap: 12px 24px; }
+}
+
+@media (max-width: 520px) {
+  .columns { grid-template-columns: 1fr; }
+}

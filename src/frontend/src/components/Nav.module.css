@@ -11,7 +11,21 @@
   color: var(--pp-muted);
 }
 
-.brand { display: flex; align-items: center; gap: 12px; }
+/* The wordmark is the way back to the landing page. */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.brand:hover .mark { border-color: var(--pp-teal-hi); }
+.brand:hover .mark::after { background: var(--pp-teal-hi); }
+.brand:hover .wordmark { color: var(--pp-teal-hi); }
 
 .mark {
   width: 11px; height: 11px;
@@ -26,7 +40,12 @@
   background: var(--pp-teal);
 }
 
-.wordmark { color: var(--pp-text); font-weight: 700; letter-spacing: 0.18em; }
+.wordmark {
+  color: var(--pp-text);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  transition: color var(--pp-dur-fast) var(--pp-ease);
+}
 
 .meta { display: flex; gap: 26px; align-items: center; }
 .value { color: var(--pp-text); }

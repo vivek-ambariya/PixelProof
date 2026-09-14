@@ -39,6 +39,13 @@ export default function App() {
     if (entered) window.scrollTo(0, 0)
   }, [entered])
 
+  // Reset the scroll before the gate remounts, so Lenis initialises at the top
+  // rather than adopting wherever the app happened to be scrolled to.
+  const exitToGate = useCallback(() => {
+    window.scrollTo(0, 0)
+    setEntered(false)
+  }, [])
+
   // Revoke the previous preview URL whenever it is replaced, and on unmount.
   useEffect(() => () => {
     if (objectUrl.current) URL.revokeObjectURL(objectUrl.current)
@@ -102,7 +109,7 @@ export default function App() {
         <Gate onEnter={() => setEntered(true)} />
       ) : (
         <div className="pp-shell">
-          <Nav health={health} />
+          <Nav health={health} onHome={exitToGate} />
           <Hero
             phase={phase}
             result={result}
