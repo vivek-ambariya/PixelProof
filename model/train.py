@@ -62,7 +62,7 @@ from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader, Dataset
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from model import DEFAULT_BACKBONE, PixelProofNet, count_params, describe, pick_device
+from .model import DEFAULT_BACKBONE, PixelProofNet, count_params, describe, pick_device
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -320,7 +320,7 @@ def main() -> None:
     ap.add_argument("--data", default=str(ROOT / "data" / "csv"),
                     help="directory holding the split CSVs from data/prepare.py")
     ap.add_argument("--backbone", default=DEFAULT_BACKBONE,
-                    choices=["clip_vit_b16", "resnet50"])
+                    choices=["clip_vit_b16", "resnet50", "3-stream"])
     ap.add_argument("--epochs", type=int, default=20)
     ap.add_argument("--batch-size", type=int, default=64)
     ap.add_argument("--lr", type=float, default=None,
