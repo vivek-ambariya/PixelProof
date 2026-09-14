@@ -6,6 +6,8 @@ import HardPart from './components/HardPart.jsx'
 import Batch from './components/Batch.jsx'
 import Footer from './components/Footer.jsx'
 import Gate from './components/gate/Gate.jsx'
+import IntroSequence from './components/intro/IntroSequence.jsx'
+import { useReducedMotion } from './hooks/useReducedMotion.js'
 import { fetchHealth, predictImage, rejectReason } from './lib/api.js'
 
 /**
@@ -15,7 +17,9 @@ import { fetchHealth, predictImage, rejectReason } from './lib/api.js'
  * mixing the two made the hero panel flicker between phases.
  */
 export default function App() {
-  const [entered, setEntered] = useState(false)
+  // gate -> intro -> app. The intro is a timed interstitial, skipped wholesale
+  // for visitors who have asked for reduced motion.
+  const [stage, setStage] = useState('gate')
   const [phase, setPhase] = useState('idle')
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -27,23 +31,31 @@ export default function App() {
   const objectUrl = useRef(null)
   const abort = useRef(null)
 
-  // Held until entry so the landing page itself makes no network calls, and
-  // so the status in the header is fresh when the tool appears.
+  const reduced = useReducedMotion()
+
+  // Fired once the visitor leaves the gate, so the intro doubles as cover for
+  // the health round-trip and the status is settled when the tool appears.
   useEffect(() => {
-    if (!entered) return
+    if (stage === 'gate') return
     fetchHealth().then(setHealth)
-  }, [entered])
+  }, [stage])
 
   // The gate leaves the page scrolled wherever the visitor stopped reading.
   useEffect(() => {
-    if (entered) window.scrollTo(0, 0)
-  }, [entered])
+    if (stage === 'app') window.scrollTo(0, 0)
+  }, [stage])
+
+  const enter = useCallback(() => {
+    setStage(reduced ? 'app' : 'intro')
+  }, [reduced])
+
+  const finishIntro = useCallback(() => setStage('app'), [])
 
   // Reset the scroll before the gate remounts, so Lenis initialises at the top
   // rather than adopting wherever the app happened to be scrolled to.
   const exitToGate = useCallback(() => {
     window.scrollTo(0, 0)
-    setEntered(false)
+    setStage('gate')
   }, [])
 
   // Revoke the previous preview URL whenever it is replaced, and on unmount.
@@ -104,9 +116,10 @@ export default function App() {
   return (
     <>
       {/* Grain belongs to the app's darkroom look; the gate is clean stock. */}
-      {entered && <div className="pp-grain" aria-hidden="true" />}
-      {!entered ? (
-        <Gate onEnter={() => setEntered(true)} />
+      {stage === 'app' && <div className="pp-grain" aria-hidden="true" />}
+      {stage === 'intro' && <IntroSequence onDone={finishIntro} />}
+      {stage === 'gate' ? (
+        <Gate onEnter={enter} />
       ) : (
         <div className="pp-shell">
           <Nav health={health} onHome={exitToGate} />

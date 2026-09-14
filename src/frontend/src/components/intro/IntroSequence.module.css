@@ -1,0 +1,180 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: hidden;
+  background: #ebe9e4;
+  /* The overlay consumes the gesture; nothing behind it should scroll. */
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+}
+
+.card {
+  position: absolute;
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+
+.flipper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+  background: #1a1614;
+}
+
+.img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.back {
+  transform: rotateY(180deg);
+  background: #0b0908;
+  border: 1px solid #443c36;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.backLabel {
+  font-family: var(--pp-mono);
+  font-size: 7px;
+  letter-spacing: 0.16em;
+  color: #ff4c24;
+}
+
+.backIndex {
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  color: #ece7e1;
+}
+
+.skip {
+  position: absolute;
+  top: 28px;
+  right: 32px;
+  z-index: 3;
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+
+.centreCopy {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 2;
+  text-align: center;
+  padding: 0 24px;
+  pointer-events: none;
+}
+
+.topCopy {
+  position: absolute;
+  top: 18%;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  text-align: center;
+  padding: 0 24px;
+  pointer-events: none;
+}
+
+.kicker {
+  margin: 0 0 14px;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: #8a8a8a;
+}
+
+.headline,
+.headlineLight {
+  margin: 0;
+  font-family: var(--pp-display);
+  font-weight: 900;
+  font-stretch: 76%;
+  text-transform: uppercase;
+  letter-spacing: -0.022em;
+  line-height: 0.98;
+}
+
+/* Sits inside the ring of cards, so it has to stay narrower than the ring's
+   clear middle and wrap rather than run out across the images. */
+.headline {
+  color: #111111;
+  font-size: clamp(22px, 3vw, 42px);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Above the arc, with the whole width free. */
+.headlineLight {
+  color: #ece7e1;
+  font-size: clamp(26px, 4.4vw, 56px);
+}
+
+.sub {
+  margin: 18px 0 0;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: #8a807a;
+  text-transform: uppercase;
+}
+
+.hint {
+  margin: 22px 0 0;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: #6a6a6a;
+}
+
+/* How much of the morph is left, so the scroll has a visible end. */
+.progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(128, 128, 128, 0.18);
+  z-index: 3;
+}
+
+.progressFill {
+  height: 100%;
+  width: 100%;
+  transform-origin: 0 50%;
+  background: #ff4c24;
+}
+
+@media (max-width: 900px) {
+  .skip { top: 18px; right: 18px; }
+  .topCopy { top: 12%; }
+}

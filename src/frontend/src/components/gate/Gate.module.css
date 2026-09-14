@@ -24,9 +24,8 @@
   --pp-amber-hi: #ff6a48;
   --pp-amber-deep: #d93c18;
 
-  /* Tight ultrabold display against a neutral grotesk body, as on the
-     reference. Archivo's width axis supplies the condensed cut. */
-  --pp-display: Archivo, 'Helvetica Neue', system-ui, sans-serif;
+  /* Tight ultrabold display (--pp-display, from tokens.css) against a neutral
+     grotesk body, as on the reference. */
   --pp-sans: Inter, 'Helvetica Neue', system-ui, sans-serif;
 
   /* Sections run full-bleed and manage their own inner max-width, so the gate
