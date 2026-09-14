@@ -45,6 +45,14 @@ export default function App() {
     if (stage === 'app') window.scrollTo(0, 0)
   }, [stage])
 
+  // The tool runs on the inverted palette; the landing page and intro do not.
+  useEffect(() => {
+    const cls = document.documentElement.classList
+    if (stage === 'app') cls.add('pp-app')
+    else cls.remove('pp-app')
+    return () => cls.remove('pp-app')
+  }, [stage])
+
   const enter = useCallback(() => {
     setStage(reduced ? 'app' : 'intro')
   }, [reduced])
@@ -115,8 +123,6 @@ export default function App() {
 
   return (
     <>
-      {/* Grain belongs to the app's darkroom look; the gate is clean stock. */}
-      {stage === 'app' && <div className="pp-grain" aria-hidden="true" />}
       {stage === 'intro' && <IntroSequence onDone={finishIntro} />}
       {stage === 'gate' ? (
         <Gate onEnter={enter} />

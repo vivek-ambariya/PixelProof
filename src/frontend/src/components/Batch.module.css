@@ -2,9 +2,9 @@
 .intro { margin: 16px 0 0; max-width: 50ch; color: var(--pp-text-3); font-size: 16px; line-height: 1.6; }
 
 .add {
-  background: var(--pp-teal);
+  background: var(--pp-text);
   border: none;
-  color: #0b0908;
+  color: var(--pp-bg);
   font-family: var(--pp-mono);
   font-size: 11px;
   font-weight: 700;
@@ -48,7 +48,7 @@
 .value { font-style: normal; min-width: 52px; }
 
 .ai { color: var(--pp-amber); }
-.real { color: var(--pp-teal); }
+.real { color: var(--pp-real); }
 .unsure { color: var(--pp-muted); }
 .skipped { color: var(--pp-muted-2); }
 

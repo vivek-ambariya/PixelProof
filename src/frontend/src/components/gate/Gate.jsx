@@ -25,13 +25,6 @@ export default function Gate({ onEnter }) {
 
   useGateReveal(rootRef)
 
-  // The app paints html and body dark; the gate is light, so the ground has to
-  // change too or overscroll shows the wrong colour behind the page.
-  useEffect(() => {
-    document.documentElement.classList.add('pp-gate-active')
-    return () => document.documentElement.classList.remove('pp-gate-active')
-  }, [])
-
   useEffect(() => {
     if (reduced) return
 

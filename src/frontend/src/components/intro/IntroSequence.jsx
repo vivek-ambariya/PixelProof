@@ -183,6 +183,8 @@ export default function IntroSequence({ onDone }) {
     return () => clearTimeout(timer)
   }, [fading, onDone])
 
+  // The tool is on the inverted palette, so the ground crosses to meet it and
+  // the hand-off reads as one move rather than a jump between two schemes.
   const dark = morph > 0.45
 
   const targetFor = (i) => {
@@ -212,10 +214,8 @@ export default function IntroSequence({ onDone }) {
     <motion.div
       className={s.overlay}
       ref={stageRef}
-      // The ground crosses from the landing page's cream to the app's black, so
-      // the handoff reads as one move rather than two screens.
       animate={{
-        backgroundColor: dark ? '#0b0908' : '#ebe9e4',
+        backgroundColor: dark ? '#111111' : '#ebe9e4',
         opacity: fading ? 0 : 1,
       }}
       transition={{
@@ -227,7 +227,7 @@ export default function IntroSequence({ onDone }) {
         type="button"
         className={s.skip}
         onClick={onDone}
-        animate={{ color: dark ? '#8a807a' : '#6a6a6a' }}
+        animate={{ color: dark ? '#8f8b83' : '#6a6a6a' }}
       >
         SKIP <span aria-hidden="true">&rarr;</span>
       </motion.button>

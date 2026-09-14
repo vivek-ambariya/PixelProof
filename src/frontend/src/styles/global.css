@@ -4,11 +4,6 @@
 
 html { background: var(--pp-bg); }
 
-/* The landing gate runs on the light palette, so the ground behind the page
-   follows it until the visitor dives in. */
-html.pp-gate-active,
-html.pp-gate-active body { background: #ebe9e4; }
-
 body {
   margin: 0;
   background: var(--pp-bg);
@@ -39,16 +34,15 @@ h1, h2, h3 { text-wrap: pretty; }
 
 button { font-family: inherit; }
 
-/* Film grain over the whole page, as in the reference. Pointer-events none so
-   it never intercepts a click on the dropzone beneath it. */
-.pp-grain {
-  position: fixed;
-  inset: -50%;
-  z-index: 999;
-  pointer-events: none;
-  opacity: 0.055;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='4' stitchTiles='stitch'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>");
+/* Every display line in the product: condensed, ultrabold, tightly tracked.
+   Marked with data-display at the call site so each stylesheet owns only its
+   own size and rhythm. */
+[data-display] {
+  font-family: var(--pp-display);
+  font-weight: 900;
+  font-stretch: 76%;
+  text-transform: uppercase;
+  letter-spacing: -0.022em;
 }
 
 .pp-shell {
@@ -71,17 +65,20 @@ button { font-family: inherit; }
   border-top: 1px solid var(--pp-rule-soft);
 }
 
+/* Section headings match the landing page's cut. */
 .pp-h2 {
   margin: 16px 0 0;
-  font-size: 48px;
-  line-height: 1.02;
-  letter-spacing: -0.03em;
-  font-weight: 600;
+  font-family: var(--pp-display);
+  font-weight: 900;
+  font-stretch: 76%;
+  text-transform: uppercase;
+  letter-spacing: -0.022em;
+  font-size: clamp(32px, 5vw, 64px);
+  line-height: 0.98;
 }
 
 @media (max-width: 900px) {
   .pp-section { padding: 60px 0; }
-  .pp-h2 { font-size: 34px; }
 }
 
 .pp-visually-hidden {

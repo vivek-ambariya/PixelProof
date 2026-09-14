@@ -1,51 +1,12 @@
-/* The reference site's palette and type, scoped to the landing page by
-   overriding the app's own token names. Everything inside — including the
-   reused Footer, which reads the same tokens — re-themes from here, and the
-   app goes back to its dark identity the moment the gate unmounts. */
+/* The palette and type now live in tokens.css and are shared with the tool, so
+   the gate only owns its layout. */
 .gate {
-  --pp-bg: #ebe9e4;
-  --pp-panel: #e4e1da;
-  --pp-panel-deep: #e7e4dd;
-  --pp-rule: #dbdbdb;
-  --pp-rule-soft: #e1dfd8;
-  --pp-rule-strong: #c2beb5;
-
-  --pp-text: #111111;
-  --pp-text-2: #333333;
-  --pp-text-3: #555555;
-  --pp-muted: #6a6a6a;
-  --pp-muted-2: #8a8a8a;
-  --pp-muted-3: #aaaaaa;
-
-  /* One accent, carrying both the interactive and the caution role. */
-  --pp-teal: #ff4c24;
-  --pp-teal-hi: #ff6a48;
-  --pp-amber: #ff4c24;
-  --pp-amber-hi: #ff6a48;
-  --pp-amber-deep: #d93c18;
-
-  /* Tight ultrabold display (--pp-display, from tokens.css) against a neutral
-     grotesk body, as on the reference. */
-  --pp-sans: Inter, 'Helvetica Neue', system-ui, sans-serif;
-
   /* Sections run full-bleed and manage their own inner max-width, so the gate
      is not wrapped in .pp-shell the way the app is. */
   width: 100%;
   overflow-x: clip;
   background: var(--pp-bg);
   color: var(--pp-text);
-  font-family: var(--pp-sans);
-}
-
-/* Every display line on the page: condensed, ultrabold, tightly tracked.
-   Marked with data-display at the call site so each section's stylesheet only
-   has to own its own size and rhythm. */
-.gate [data-display] {
-  font-family: var(--pp-display);
-  font-weight: 900;
-  font-stretch: 76%;
-  text-transform: uppercase;
-  letter-spacing: -0.022em;
 }
 
 .closing {
