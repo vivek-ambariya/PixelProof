@@ -26,8 +26,10 @@
   --pp-warn-rule: #6b3a1e;
   --pp-warn-bg: #150f0c;
 
-  /* Type */
+  /* Type. --pp-display is the condensed ultrabold cut used for big headlines;
+     it lives here rather than in the gate so the intro overlay can read it too. */
   --pp-sans: Archivo, "Helvetica Neue", system-ui, sans-serif;
+  --pp-display: Archivo, "Helvetica Neue", system-ui, sans-serif;
   --pp-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Motion. Zeroed wholesale under prefers-reduced-motion below. */

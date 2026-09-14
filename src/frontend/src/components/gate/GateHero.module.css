@@ -1,0 +1,114 @@
+.hero {
+  padding: 104px var(--pp-gutter) 108px;
+  min-height: calc(100svh - 72px);
+  display: flex;
+  align-items: center;
+}
+
+.inner {
+  max-width: var(--pp-max);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.kicker {
+  margin: 0;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pp-amber-deep);
+}
+
+/* The one piece of type on the site allowed to shout. */
+.title {
+  margin: 28px 0 0;
+  font-size: clamp(44px, 9.4vw, 148px);
+  line-height: 0.88;
+}
+
+.lede {
+  margin: 34px 0 0;
+  max-width: 52ch;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--pp-text-3);
+}
+
+.actions {
+  margin: 42px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--pp-text);
+  border: none;
+  color: var(--pp-bg);
+  font-family: var(--pp-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 18px 32px;
+  cursor: pointer;
+  transition: background var(--pp-dur-fast) var(--pp-ease),
+              transform var(--pp-dur-fast) var(--pp-ease);
+}
+.cta:hover { background: var(--pp-teal); transform: translateY(-2px); }
+
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1px solid var(--pp-rule-strong);
+  color: var(--pp-text-3);
+  font-family: var(--pp-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 17px 26px;
+  cursor: pointer;
+  transition: color var(--pp-dur-fast) var(--pp-ease),
+              border-color var(--pp-dur-fast) var(--pp-ease);
+}
+.secondary:hover { color: var(--pp-text); border-color: var(--pp-muted); }
+
+.stats {
+  margin: 76px 0 0;
+  padding-top: 26px;
+  border-top: 1px solid var(--pp-rule-soft);
+  display: flex;
+  gap: 56px;
+  flex-wrap: wrap;
+}
+
+.stat { display: flex; flex-direction: column; gap: 6px; }
+
+.statValue {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--pp-text);
+}
+
+.statLabel {
+  margin: 0;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  color: var(--pp-muted-2);
+}
+
+@media (max-width: 900px) {
+  .hero { padding: 64px var(--pp-gutter) 72px; min-height: 0; }
+  .lede { font-size: 16px; }
+  .stats { gap: 28px 36px; margin-top: 52px; }
+  .cta, .secondary { flex: 1 1 auto; justify-content: center; }
+}

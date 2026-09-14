@@ -1,0 +1,100 @@
+.section {
+  padding: 124px var(--pp-gutter);
+  border-top: 1px solid var(--pp-rule-soft);
+  scroll-margin-top: 72px;
+}
+
+.inner { max-width: var(--pp-max); margin: 0 auto; }
+
+.kicker {
+  margin: 0;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--pp-muted-2);
+}
+
+.heading {
+  margin: 18px 0 0;
+  font-size: clamp(32px, 5vw, 64px);
+  line-height: 0.98;
+}
+
+.list {
+  margin: 64px 0 0;
+  border-top: 1px solid var(--pp-rule);
+}
+
+.item { border-bottom: 1px solid var(--pp-rule); }
+
+.summary {
+  appearance: none;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  padding: 26px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  font-family: inherit;
+  font-size: clamp(17px, 2vw, 21px);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--pp-text-2);
+  transition: color var(--pp-dur-fast) var(--pp-ease);
+}
+.item:hover .summary,
+.summary[aria-expanded='true'] { color: var(--pp-text); }
+
+/* A plus that becomes a minus, drawn from two rules so it needs no glyph. */
+.icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+}
+.icon::before,
+.icon::after {
+  content: '';
+  position: absolute;
+  background: var(--pp-teal);
+  transition: transform var(--pp-dur-fast) var(--pp-ease);
+}
+.icon::before { left: 0; right: 0; top: 6px; height: 1px; }
+.icon::after { top: 0; bottom: 0; left: 6px; width: 1px; }
+.iconOpen::after { transform: scaleY(0); }
+
+/* Animating to auto height: the 0fr/1fr grid row is the one way to do it in
+   CSS without measuring the answer in JS. */
+.answerWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--pp-dur) var(--pp-ease);
+}
+.answerOpen { grid-template-rows: 1fr; }
+
+/* The clipping row has to carry no padding of its own — padding cannot compress
+   below its own size, and the answer's would leave a sliver of text showing
+   when collapsed. So spacing lives on the paragraph inside. */
+.answerInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.answer {
+  margin: 0;
+  padding: 0 0 28px;
+  max-width: 78ch;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--pp-text-3);
+}
+
+@media (max-width: 900px) {
+  .section { padding: 80px var(--pp-gutter); }
+  .list { margin-top: 40px; }
+  .summary { padding: 22px 0; }
+}

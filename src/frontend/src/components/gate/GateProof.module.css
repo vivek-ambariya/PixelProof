@@ -1,0 +1,91 @@
+.section {
+  padding: 124px var(--pp-gutter);
+  border-top: 1px solid var(--pp-rule-soft);
+  scroll-margin-top: 72px;
+}
+
+.inner { max-width: var(--pp-max); margin: 0 auto; }
+
+.kicker {
+  margin: 0;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--pp-muted-2);
+}
+
+.heading {
+  margin: 18px 0 0;
+  font-size: clamp(32px, 5vw, 64px);
+  line-height: 0.98;
+}
+
+.grid {
+  margin: 72px 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--pp-rule);
+  border: 1px solid var(--pp-rule);
+}
+
+/* Tiles sit on a 1px grid gap, so the rules between them are the background
+   showing through rather than borders that would double up at the seams. */
+.tile {
+  background: var(--pp-panel-deep);
+  padding: 34px 26px 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.value {
+  font-size: clamp(30px, 3.4vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.tileAccent .value { color: var(--pp-teal); }
+
+.label {
+  margin: 16px 0 0;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  color: var(--pp-muted);
+}
+
+.note {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--pp-rule-soft);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--pp-muted-2);
+}
+
+.footnote {
+  margin: 30px 0 0;
+  max-width: 62ch;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--pp-muted-2);
+}
+.footnote code {
+  font-family: var(--pp-mono);
+  font-size: 12px;
+  color: var(--pp-text-3);
+}
+
+@media (max-width: 1040px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .section { padding: 80px var(--pp-gutter); }
+  .grid { margin-top: 44px; }
+}
+
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; }
+}

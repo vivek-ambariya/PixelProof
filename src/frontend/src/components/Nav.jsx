@@ -1,7 +1,7 @@
 import s from './Nav.module.css'
 
 /** Header bar. Model name and status come from /api/health, not hard-coded. */
-export default function Nav({ health }) {
+export default function Nav({ health, onHome }) {
   const model = health?.model?.backbone
   const loaded = health?.model_loaded
   // Until /api/health answers, say nothing rather than claim a state.
@@ -10,10 +10,15 @@ export default function Nav({ health }) {
 
   return (
     <header className={s.nav}>
-      <div className={s.brand}>
-        <div className={s.mark} aria-hidden="true" />
+      <button
+        type="button"
+        className={s.brand}
+        onClick={onHome}
+        aria-label="PixelProof — back to the landing page"
+      >
+        <span className={s.mark} aria-hidden="true" />
         <span className={s.wordmark}>PIXELPROOF</span>
-      </div>
+      </button>
       <div className={s.meta}>
         <span className={s.hideSm}>
           MODEL&nbsp;<span className={s.value}>{model || 'pp-detect'}</span>
