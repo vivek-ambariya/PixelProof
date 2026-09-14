@@ -48,12 +48,11 @@ BACKBONES: dict[str, dict] = {
         "frozen": False,
         "feat_dim": 2048,
     },
-     "3-stream": {
+    "3-stream": {
         "source": "custom",
         "frozen": False,
         "feat_dim": 2066,
     },
-
 }
 
 DEFAULT_BACKBONE = "clip_vit_b16"
@@ -99,7 +98,7 @@ class PixelProofNet(nn.Module):
         self.frozen = spec["frozen"]
 
         if backbone == "3-stream":
-            from .frequency_features import ThreeStreamDetector
+            from frequency_features import ThreeStreamDetector
 
             self.model = ThreeStreamDetector(
                 spatial_pretrained=pretrained,
