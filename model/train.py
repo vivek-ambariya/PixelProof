@@ -56,13 +56,14 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
+from .probe_training import ProbeTrainer, create_indexed_dataloader
 from albumentations.pytorch import ToTensorV2
 from PIL import Image
 from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader, Dataset
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from model import DEFAULT_BACKBONE, PixelProofNet, count_params, describe, pick_device
+from .model import DEFAULT_BACKBONE, PixelProofNet, count_params, describe, pick_device
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -323,6 +324,14 @@ def main() -> None:
                     choices=["clip_vit_b16", "resnet50"])
     ap.add_argument("--epochs", type=int, default=20)
     ap.add_argument("--batch-size", type=int, default=64)
+    ap.add_argument("--use-probe", action="store_true",
+                help="run PROBE hard-negative refinement after standard training")
+    ap.add_argument("--probe-iterations", type=int, default=3,
+                    help="number of PROBE refinement iterations")
+    ap.add_argument("--probe-percentile", type=int, default=10,
+                    help="hard-negative percentile")
+    ap.add_argument("--probe-epochs", type=int, default=5,
+                    help="epochs per PROBE iteration")
     ap.add_argument("--lr", type=float, default=None,
                     help="default 1e-3 for the cached head, 1e-4 end to end")
     ap.add_argument("--weight-decay", type=float, default=1e-4)
@@ -585,7 +594,30 @@ def main() -> None:
         if since >= args.patience:
             print(f"early stop: no {monitor} AUC improvement in {args.patience} epochs")
             break
+    if args.use_probe:
+        print("\n" + "=" * 70)
+        print("PROBE adversarial hard-negative refinement")
+        print("=" * 70)
 
+        indexed_train_loader = create_indexed_dataloader(train_loader)
+        indexed_val_loader = create_indexed_dataloader(val_loader)
+
+        probe_trainer = ProbeTrainer(
+            model=net,
+            device=device,
+            learning_rate=1e-4,
+            weight_decay=1e-5,
+        )
+
+        probe_history = probe_trainer.train_with_probe(
+            train_dataloader=indexed_train_loader,
+            val_dataloader=indexed_val_loader,
+            num_iterations=args.probe_iterations,
+            percentile_hard=args.probe_percentile,
+            epochs_per_iteration=args.probe_epochs,
+        )
+
+        print("PROBE refinement complete.")       
     print("=" * 70)
     print(f"best {monitor} AUC {best:.4f} at epoch {best_ep}")
     print(f"checkpoint -> {ckpt_path}")
