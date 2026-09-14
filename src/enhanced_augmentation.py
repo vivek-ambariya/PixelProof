@@ -27,23 +27,56 @@ import cv2
 import numpy as np
 from albumentations.pytorch import ToTensorV2
 
+IMAGENET_MEAN = (0.485, 0.456, 0.406)
+IMAGENET_STD = (0.229, 0.224, 0.225)
 
-def get_augmentation_pipeline(mode: str = 'train', img_size: int = 224) -> A.Compose:
+
+def get_augmentation_pipeline(
+    mode: str = 'train',
+    img_size: int = 224,
+    mean: tuple[float, ...] = IMAGENET_MEAN,
+    std: tuple[float, ...] = IMAGENET_STD,
+    detection_safe: bool = True,
+) -> A.Compose:
     """Get augmentation pipeline for training or validation.
-    
+
     Args:
         mode: 'train' (aggressive), 'val' (minimal), or 'test' (none)
         img_size: Target image size (default 224 for ResNet/ViT)
-    
+        mean/std: normalisation statistics. MUST match the backbone -- CLIP uses
+            its own (0.4815, 0.4578, 0.4082)/(0.2686, 0.2613, 0.2758), not
+            ImageNet's. Hardcoding ImageNet here silently mis-normalises every
+            CLIP input, so the caller passes the backbone's own values.
+        detection_safe: when True (default) drop the augmentations that destroy
+            the very cues this detector relies on. See the note below.
+
     Returns:
         albumentations.Compose pipeline
-    
+
     Modes:
         'train': Heavy augmentation with degradation simulation
         'val': Light augmentation for validation
         'test': Minimal transformation (just normalization)
+
+    On ``detection_safe``
+    --------------------
+    Synthetic-image detection leans on two fragile statistics, and some standard
+    augmentations erase them:
+
+    - **Channel shuffle** permutes RGB. Real sensors produce channel-specific
+      noise correlations from Bayer demosaicing; generated images do not.
+      Shuffling channels destroys that asymmetry outright.
+    - **Injected noise** (GaussNoise / ISONoise / MultiplicativeNoise) adds grain
+      whose variance is independent of luminance -- which is precisely the
+      signature that separates generated texture from sensor output. Training on
+      it teaches the model the opposite of the cue it needs, and for the
+      ``3-stream`` backbone it directly poisons the dedicated noise stream.
+
+    Compression, rescaling, blur and photometric jitter are all kept in either
+    mode: those mirror real deployment degradation without erasing the signal.
+    Pass ``detection_safe=False`` to restore the full original pipeline.
     """
-    
+
     if mode == 'train':
         return A.Compose([
             # ==================== COMPRESSION ====================
@@ -93,15 +126,16 @@ def get_augmentation_pipeline(mode: str = 'train', img_size: int = 224) -> A.Com
             ], p=0.4),
             
             # ==================== NOISE ====================
-            # Sensor noise, compression artifacts
-            A.OneOf([
-                # Gaussian noise (camera sensor)
-               A.GaussNoise(std_range=(0.05, 0.15), p=1),
-                # ISO/color noise
-                A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=1),
-                # Gaussian blur alternative
-                A.MultiplicativeNoise(multiplier=(0.9, 1.1), p=1),
-            ], p=0.3),
+            # Skipped under detection_safe: injected grain has luminance-
+            # independent variance, the exact statistic that distinguishes
+            # generated texture from sensor output.
+            *([] if detection_safe else [
+                A.OneOf([
+                    A.GaussNoise(std_range=(0.05, 0.15), p=1),
+                    A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=1),
+                    A.MultiplicativeNoise(multiplier=(0.9, 1.1), p=1),
+                ], p=0.3),
+            ]),
             
             # ==================== BRIGHTNESS/CONTRAST ====================
             # White balance, exposure differences
@@ -135,17 +169,20 @@ def get_augmentation_pipeline(mode: str = 'train', img_size: int = 224) -> A.Com
                 p=0.2
             ),
             # ==================== CHANNEL SHIFTS ====================
-            # Random channel manipulation
-            A.ChannelShuffle(p=0.1),
+            # Skipped under detection_safe: destroys the per-channel noise
+            # correlation that Bayer demosaicing leaves in real photographs.
+            *([] if detection_safe else [A.ChannelShuffle(p=0.1)]),
             
             # ==================== FINAL NORMALIZATION ====================
-            # Resize to exact size if not done yet
-            A.Resize(height=img_size, width=img_size, p=0.5),
-            
-            # Normalize to ImageNet standards
+            # MUST be unconditional. At p=0.5 this left the image at its source
+            # size whenever neither this nor the earlier optional Resize fired --
+            # measured at 47.5% of samples on 32x32 CIFAKE input, every one of
+            # which crashes DataLoader collate on the mismatched shape.
+            A.Resize(height=img_size, width=img_size, p=1.0),
+
             A.Normalize(
-                mean=(0.485, 0.456, 0.406),
-                std=(0.229, 0.224, 0.225),
+                mean=mean,
+                std=std,
                 max_pixel_value=255.0,
                 p=1.0
             ),
@@ -154,27 +191,11 @@ def get_augmentation_pipeline(mode: str = 'train', img_size: int = 224) -> A.Com
             ToTensorV2(p=1.0),
         ], bbox_params=None)  # No bounding boxes for classification
     
-    elif mode == 'val':
-        # Validation: minimal augmentation, just resize & normalize
+    elif mode in ('val', 'test'):
+        # Both are identical: resize + normalise, no augmentation.
         return A.Compose([
             A.Resize(height=img_size, width=img_size, interpolation=cv2.INTER_LINEAR),
-            A.Normalize(
-                mean=(0.485, 0.456, 0.406),
-                std=(0.229, 0.224, 0.225),
-                max_pixel_value=255.0,
-            ),
-            ToTensorV2(),
-        ])
-    
-    elif mode == 'test':
-        # Test: no augmentation, just normalize
-        return A.Compose([
-            A.Resize(height=img_size, width=img_size, interpolation=cv2.INTER_LINEAR),
-            A.Normalize(
-                mean=(0.485, 0.456, 0.406),
-                std=(0.229, 0.224, 0.225),
-                max_pixel_value=255.0,
-            ),
+            A.Normalize(mean=mean, std=std, max_pixel_value=255.0),
             ToTensorV2(),
         ])
     

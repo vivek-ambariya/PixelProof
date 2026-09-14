@@ -1,0 +1,100 @@
+.root { width: 100%; }
+
+.stage { position: relative; }
+
+/* Vertical padding keeps the card shadows clear of the overflow clip. */
+.frame {
+  overflow: hidden;
+  padding: 40px 0;
+  outline: none;
+  cursor: grab;
+  /* Horizontal drag is ours; the page keeps vertical scrolling. */
+  touch-action: pan-y;
+}
+.frame:active { cursor: grabbing; }
+.frame:focus-visible { outline: 2px solid var(--pp-teal); outline-offset: -2px; }
+
+.ring {
+  position: relative;
+  height: var(--cf-card);
+  transform-style: preserve-3d;
+  user-select: none;
+}
+
+.card {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: var(--cf-card);
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--pp-panel);
+  border: 1px solid var(--pp-rule);
+  box-shadow: 0 24px 48px -20px rgb(0 0 0 / 0.55);
+  will-change: transform;
+}
+
+/* The centre card is the one being read out below, so it gets the accent. */
+.card[data-active] { border-color: var(--pp-teal); }
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  /* These are 256px sources blown up; keep the pixel grid honest rather than
+     letting the browser smooth away the artefacts the model scores on. */
+  image-rendering: -webkit-optimize-contrast;
+}
+
+.nav {
+  position: absolute;
+  top: 50%;
+  z-index: 200;
+  transform: translateY(-50%);
+  appearance: none;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--pp-bg) 82%, transparent);
+  border: 1px solid var(--pp-rule-strong);
+  color: var(--pp-text-2);
+  font-size: 15px;
+  line-height: 1;
+  backdrop-filter: blur(6px);
+  transition: color var(--pp-dur-fast) var(--pp-ease),
+    border-color var(--pp-dur-fast) var(--pp-ease);
+}
+.nav:hover { color: var(--pp-teal); border-color: var(--pp-teal); }
+.navPrev { left: 0; }
+.navNext { right: 0; }
+
+.dots {
+  margin-top: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.dot {
+  appearance: none;
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  background: var(--pp-muted-3);
+  opacity: 0.55;
+  transition: opacity var(--pp-dur-fast) var(--pp-ease),
+    background var(--pp-dur-fast) var(--pp-ease);
+}
+.dot:hover { opacity: 1; }
+.dot[data-on] { background: var(--pp-teal); opacity: 1; }
+
+@media (max-width: 600px) {
+  .frame { padding: 28px 0; }
+  .nav { display: none; }
+}

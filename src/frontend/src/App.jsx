@@ -4,6 +4,7 @@ import Hero from './components/Hero.jsx'
 import Explainer from './components/Explainer.jsx'
 import HardPart from './components/HardPart.jsx'
 import Batch from './components/Batch.jsx'
+import ProbeStrip from './components/ProbeStrip.jsx'
 import Footer from './components/Footer.jsx'
 import Gate from './components/gate/Gate.jsx'
 import IntroSequence from './components/intro/IntroSequence.jsx'
@@ -145,6 +146,7 @@ export default function App() {
           <Explainer />
           <HardPart />
           <Batch />
+          <ProbeStrip />
           <Footer />
         </div>
       )}

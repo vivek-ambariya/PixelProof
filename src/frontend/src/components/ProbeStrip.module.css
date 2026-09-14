@@ -1,0 +1,121 @@
+.head { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 64px; align-items: end; }
+.lede { margin: 0; max-width: 52ch; color: var(--pp-text-3); font-size: 16px; line-height: 1.65; }
+
+/* Caption -------------------------------------------------------------- */
+
+.caption {
+  margin: 4px auto 0;
+  max-width: 340px;
+  text-align: center;
+}
+
+.verdictRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 14px;
+}
+
+.verdict {
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+.verdict[data-tone='caught'] { color: var(--pp-amber); }
+.verdict[data-tone='missed'] { color: var(--pp-muted-2); }
+
+.prob {
+  font-family: var(--pp-mono);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.prob[data-tone='caught'] { color: var(--pp-amber); }
+.prob[data-tone='missed'] { color: var(--pp-text-3); }
+
+.meter {
+  position: relative;
+  margin-top: 16px;
+  height: 3px;
+  background: var(--pp-rule);
+}
+
+.meterFill { position: absolute; inset: 0 auto 0 0; }
+.meterFill[data-tone='caught'] { background: var(--pp-amber); }
+.meterFill[data-tone='missed'] { background: var(--pp-muted-3); }
+
+/* The decision threshold, so a near-miss reads as a near-miss. */
+.meterMark {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 1px;
+  background: var(--pp-text-2);
+}
+
+.meta {
+  margin: 18px 0 0;
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 0;
+  border-top: 1px solid var(--pp-rule-soft);
+}
+.metaRow dt { color: var(--pp-muted-2); }
+.metaRow dd { margin: 0; color: var(--pp-text-2); }
+.truth { color: var(--pp-amber) !important; }
+
+/* Tally ---------------------------------------------------------------- */
+
+.tally {
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px solid var(--pp-rule);
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.tallyStat { display: flex; flex-direction: column; gap: 10px; }
+
+.tallyNum {
+  font-family: var(--pp-mono);
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+}
+.tallyNum[data-tone='caught'] { color: var(--pp-amber); }
+.tallyNum[data-tone='missed'] { color: var(--pp-text-3); }
+
+.tallyLabel {
+  font-family: var(--pp-mono);
+  font-size: 10px;
+  letter-spacing: 0.11em;
+  color: var(--pp-muted);
+  max-width: 22ch;
+  line-height: 1.7;
+}
+
+.tallyNote {
+  margin: 0;
+  max-width: 44ch;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--pp-text-3);
+}
+
+@media (max-width: 900px) {
+  .head { grid-template-columns: 1fr; gap: 26px; align-items: start; }
+  .tally { grid-template-columns: auto auto; gap: 28px 36px; }
+  .tallyNote { grid-column: 1 / -1; }
+  .tallyNum { font-size: 48px; }
+}

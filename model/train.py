@@ -63,6 +63,7 @@ from sklearn.metrics import roc_auc_score
 from torch.utils.data import DataLoader, Dataset
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from model import DEFAULT_BACKBONE, PixelProofNet, count_params, describe, pick_device
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -341,6 +342,18 @@ def main() -> None:
     ap.add_argument("--out", default=str(ROOT / "model" / "checkpoints"))
     ap.add_argument("--cache-dir", default=str(ROOT / "data" / "cache"))
     ap.add_argument("--num-workers", type=int, default=4)
+    ap.add_argument("--augment", default="legacy", choices=["legacy", "enhanced"],
+                    help="augmentation pipeline for the END-TO-END path (resnet50, "
+                         "3-stream). 'legacy' is build_train_transform below; "
+                         "'enhanced' is src/enhanced_augmentation.py, which adds "
+                         "webp/perspective/affine/dropout degradation on top. The "
+                         "cached CLIP path is unaffected either way -- it uses the "
+                         "K deterministic variants, not a random pipeline.")
+    ap.add_argument("--augment-unsafe", action="store_true",
+                    help="with --augment enhanced, re-enable channel shuffle and "
+                         "injected noise. Both erase detection cues (per-channel "
+                         "sensor-noise correlation, luminance-dependent variance), "
+                         "so they are off by default.")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--device", default="auto")
     ap.add_argument("--limit-train", type=int, default=0,
@@ -493,8 +506,21 @@ def main() -> None:
                                   num_workers=0)
     else:
         print("end-to-end path: on-the-fly augmentation, no feature cache")
+        if args.augment == "enhanced":
+            from enhanced_augmentation import get_augmentation_pipeline
+            train_tf = get_augmentation_pipeline(
+                mode="train", img_size=net.img_size,
+                mean=net.mean, std=net.std,          # never hardcode: CLIP != ImageNet
+                detection_safe=not args.augment_unsafe,
+            )
+            print(f"augmentation: enhanced "
+                  f"(detection_safe={not args.augment_unsafe})")
+        else:
+            train_tf = build_train_transform(net.img_size, net.mean, net.std)
+            print("augmentation: legacy")
+
         train_loader = DataLoader(
-            ImageRows(splits["train"], build_train_transform(net.img_size, net.mean, net.std)),
+            ImageRows(splits["train"], train_tf),
             batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers,
             drop_last=True)
         ev = build_eval_transform(net.img_size, net.mean, net.std)
