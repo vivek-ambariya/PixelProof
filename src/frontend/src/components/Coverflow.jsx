@@ -32,6 +32,8 @@ export default function Coverflow({
   /** Space between cards, as a fraction of card width. */
   gap = 0.05,
   loop = true,
+  /** Milliseconds between automatic advances. 0 turns autoplay off. */
+  autoplay = 0,
   showPagination = true,
   showNavigation = true,
   /** Names the carousel for assistive tech. */
@@ -42,6 +44,7 @@ export default function Coverflow({
   const count = slides.length
   const reduced = useReducedMotion()
 
+  const rootRef = useRef(null)
   const frameRef = useRef(null)
   const cardRefs = useRef([])
   /** Fractional card index at the centre. The single source of truth. */
@@ -54,6 +57,16 @@ export default function Coverflow({
   const dragRef = useRef(null)
 
   const [selected, setSelected] = useState(0)
+
+  // Autoplay is suspended rather than cancelled by any of these, so it picks
+  // itself back up the moment the reason goes away.
+  const [hovering, setHovering] = useState(false)
+  const [dragging, setDragging] = useState(false)
+  const [inView, setInView] = useState(false)
+  const [awake, setAwake] = useState(true)
+  /** Bumped by every manual move, to restart the interval from zero. Without
+      it a click could be followed by an automatic advance milliseconds later. */
+  const [bump, setBump] = useState(0)
 
   /** Nearest whole card, folded back into 0..count-1. */
   const indexAt = useCallback(
@@ -154,12 +167,20 @@ export default function Coverflow({
     [clamp, settle],
   )
 
+  // Manual moves restart the autoplay clock; the automatic one does not, so
+  // the cadence stays even while it runs on its own.
+  const restart = useCallback(() => setBump((n) => n + 1), [])
+  const manualNudge = useCallback((by) => { restart(); nudge(by) }, [nudge, restart])
+  const manualGoTo = useCallback((index) => { restart(); goTo(index) }, [goTo, restart])
+
   const onPointerDown = (event) => {
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current)
       rafRef.current = null
     }
     event.currentTarget.setPointerCapture(event.pointerId)
+    setDragging(true)
+    restart()
     targetRef.current = posRef.current
     dragRef.current = {
       id: event.pointerId,
@@ -191,8 +212,12 @@ export default function Coverflow({
 
   const endDrag = (event) => {
     const drag = dragRef.current
+    // A pointerup with no drag in flight still has to clear the flag, or a
+    // cancelled gesture would leave autoplay suspended for good.
+    setDragging(false)
     if (!drag || drag.id !== event.pointerId) return
     dragRef.current = null
+    restart()
     // Let a flick carry, but never more than two cards.
     const carried = Math.max(-2, Math.min(2, drag.v * 0.18))
     settle(clamp(Math.round(posRef.current + carried)))
@@ -224,13 +249,55 @@ export default function Coverflow({
     [],
   )
 
+  // Only run while the strip is actually on screen. The section sits near the
+  // bottom of the page, so without this it would have spun through the whole
+  // ring unseen and be sitting on an arbitrary card by the time it is reached.
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root || !autoplay) return
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.35 },
+    )
+    observer.observe(root)
+    return () => observer.disconnect()
+  }, [autoplay])
+
+  // A background tab throttles timers rather than stopping them, which would
+  // otherwise bank up advances and land somewhere random on return.
+  useEffect(() => {
+    if (!autoplay) return
+    const onVisibility = () => setAwake(!document.hidden)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [autoplay])
+
+  // Never under reduced motion: content that moves on its own is exactly what
+  // that preference is asking us not to do.
+  const playing = Boolean(autoplay) && !reduced && inView && awake && !hovering && !dragging
+
+  useEffect(() => {
+    if (!playing) return
+    const id = setInterval(() => nudge(1), autoplay)
+    return () => clearInterval(id)
+  }, [playing, autoplay, nudge, bump])
+
   return (
     <div
+      ref={rootRef}
       className={`${s.root} ${className}`}
       style={{ '--cf-card': cardWidth }}
       role="region"
       aria-roledescription="carousel"
       aria-label={label}
+      // Pointing at it or tabbing into it is a signal you want to read this
+      // card, so the clock waits.
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+      onFocusCapture={() => setHovering(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setHovering(false)
+      }}
     >
       <div className={s.stage}>
         <div
@@ -243,10 +310,10 @@ export default function Coverflow({
           onKeyDown={(event) => {
             if (event.key === 'ArrowLeft') {
               event.preventDefault()
-              nudge(-1)
+              manualNudge(-1)
             } else if (event.key === 'ArrowRight') {
               event.preventDefault()
-              nudge(1)
+              manualNudge(1)
             }
           }}
           className={s.frame}
@@ -283,7 +350,7 @@ export default function Coverflow({
             <button
               type="button"
               aria-label="Previous slide"
-              onClick={() => nudge(-1)}
+              onClick={() => manualNudge(-1)}
               className={`${s.nav} ${s.navPrev}`}
             >
               <span aria-hidden="true">&larr;</span>
@@ -291,7 +358,7 @@ export default function Coverflow({
             <button
               type="button"
               aria-label="Next slide"
-              onClick={() => nudge(1)}
+              onClick={() => manualNudge(1)}
               className={`${s.nav} ${s.navNext}`}
             >
               <span aria-hidden="true">&rarr;</span>
@@ -310,7 +377,7 @@ export default function Coverflow({
               type="button"
               aria-label={`Go to slide ${index + 1}`}
               aria-current={index === selected}
-              onClick={() => goTo(index)}
+              onClick={() => manualGoTo(index)}
               className={s.dot}
               data-on={index === selected ? '' : undefined}
             />

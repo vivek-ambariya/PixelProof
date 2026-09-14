@@ -86,6 +86,7 @@ export default function ProbeStrip() {
 
       <Coverflow
         slides={SLIDES}
+        autoplay={3500}
         label="Probe images and their scores"
         renderCaption={Caption}
       />
