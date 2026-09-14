@@ -4,6 +4,11 @@
 
 html { background: var(--pp-bg); }
 
+/* The landing gate runs on the light palette, so the ground behind the page
+   follows it until the visitor dives in. */
+html.pp-gate-active,
+html.pp-gate-active body { background: #ebe9e4; }
+
 body {
   margin: 0;
   background: var(--pp-bg);
@@ -13,10 +18,12 @@ body {
   overflow-x: hidden;
 }
 
+/* Derived from the accent token rather than hard-coded, so the gate's light
+   palette re-themes links along with everything else. */
 a {
   color: var(--pp-teal);
   text-decoration: none;
-  border-bottom: 1px solid rgba(79, 216, 196, 0.35);
+  border-bottom: 1px solid color-mix(in srgb, var(--pp-teal) 35%, transparent);
 }
 a:hover { color: var(--pp-teal-hi); border-bottom-color: var(--pp-teal-hi); }
 
@@ -26,7 +33,7 @@ a:hover { color: var(--pp-teal-hi); border-bottom-color: var(--pp-teal-hi); }
   outline-offset: 3px;
 }
 
-::selection { background: rgba(79, 216, 196, 0.28); color: var(--pp-text); }
+::selection { background: color-mix(in srgb, var(--pp-teal) 28%, transparent); color: var(--pp-text); }
 
 h1, h2, h3 { text-wrap: pretty; }
 

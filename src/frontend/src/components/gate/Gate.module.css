@@ -1,0 +1,108 @@
+/* The reference site's palette and type, scoped to the landing page by
+   overriding the app's own token names. Everything inside — including the
+   reused Footer, which reads the same tokens — re-themes from here, and the
+   app goes back to its dark identity the moment the gate unmounts. */
+.gate {
+  --pp-bg: #ebe9e4;
+  --pp-panel: #e4e1da;
+  --pp-panel-deep: #e7e4dd;
+  --pp-rule: #dbdbdb;
+  --pp-rule-soft: #e1dfd8;
+  --pp-rule-strong: #c2beb5;
+
+  --pp-text: #111111;
+  --pp-text-2: #333333;
+  --pp-text-3: #555555;
+  --pp-muted: #6a6a6a;
+  --pp-muted-2: #8a8a8a;
+  --pp-muted-3: #aaaaaa;
+
+  /* One accent, carrying both the interactive and the caution role. */
+  --pp-teal: #ff4c24;
+  --pp-teal-hi: #ff6a48;
+  --pp-amber: #ff4c24;
+  --pp-amber-hi: #ff6a48;
+  --pp-amber-deep: #d93c18;
+
+  /* Tight ultrabold display against a neutral grotesk body, as on the
+     reference. Archivo's width axis supplies the condensed cut. */
+  --pp-display: Archivo, 'Helvetica Neue', system-ui, sans-serif;
+  --pp-sans: Inter, 'Helvetica Neue', system-ui, sans-serif;
+
+  /* Sections run full-bleed and manage their own inner max-width, so the gate
+     is not wrapped in .pp-shell the way the app is. */
+  width: 100%;
+  overflow-x: clip;
+  background: var(--pp-bg);
+  color: var(--pp-text);
+  font-family: var(--pp-sans);
+}
+
+/* Every display line on the page: condensed, ultrabold, tightly tracked.
+   Marked with data-display at the call site so each section's stylesheet only
+   has to own its own size and rhythm. */
+.gate [data-display] {
+  font-family: var(--pp-display);
+  font-weight: 900;
+  font-stretch: 76%;
+  text-transform: uppercase;
+  letter-spacing: -0.022em;
+}
+
+.closing {
+  border-top: 1px solid var(--pp-rule-soft);
+  padding: 132px var(--pp-gutter);
+  text-align: center;
+}
+
+.closingInner {
+  max-width: var(--pp-max);
+  margin: 0 auto;
+}
+
+.closingKicker {
+  margin: 0;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--pp-muted-2);
+}
+
+.closingTitle {
+  margin: 20px 0 0;
+  font-size: clamp(36px, 6vw, 78px);
+  line-height: 0.96;
+}
+
+.closingCta {
+  margin: 40px 0 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--pp-text);
+  border: none;
+  color: var(--pp-bg);
+  font-family: var(--pp-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 18px 34px;
+  cursor: pointer;
+  transition: background var(--pp-dur-fast) var(--pp-ease),
+              transform var(--pp-dur-fast) var(--pp-ease);
+}
+.closingCta:hover { background: var(--pp-teal); transform: translateY(-2px); }
+
+.closingNote {
+  margin: 22px 0 0;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--pp-muted-2);
+}
+
+@media (max-width: 900px) {
+  .closing { padding: 84px var(--pp-gutter); }
+}

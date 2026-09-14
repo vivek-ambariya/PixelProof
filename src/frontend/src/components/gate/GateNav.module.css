@@ -1,0 +1,98 @@
+.sentinel {
+  position: absolute;
+  top: 0;
+  height: 1px;
+  width: 1px;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding: 0 var(--pp-gutter);
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background var(--pp-dur-fast) var(--pp-ease),
+              border-color var(--pp-dur-fast) var(--pp-ease);
+}
+
+/* Only once the page has moved does the bar earn a ground and a rule. */
+.navStuck {
+  background: rgba(235, 233, 228, 0.84);
+  backdrop-filter: blur(10px);
+  border-bottom-color: var(--pp-rule);
+}
+
+.inner {
+  max-width: var(--pp-max);
+  margin: 0 auto;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+
+.mark {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--pp-teal);
+  position: relative;
+}
+.mark::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: var(--pp-teal);
+}
+
+.wordmark {
+  font-family: var(--pp-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.links { display: flex; gap: 28px; }
+
+.link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pp-muted);
+  transition: color var(--pp-dur-fast) var(--pp-ease);
+}
+.link:hover { color: var(--pp-text); }
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--pp-text);
+  border: none;
+  color: var(--pp-bg);
+  font-family: var(--pp-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 12px 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--pp-dur-fast) var(--pp-ease);
+}
+.cta:hover { background: var(--pp-teal); }
+
+/* The section links are the first thing to go; the CTA never is. */
+@media (max-width: 760px) {
+  .links { display: none; }
+  .inner { height: 62px; }
+  .cta { padding: 11px 16px; }
+}

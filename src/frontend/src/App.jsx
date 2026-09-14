@@ -5,6 +5,7 @@ import Explainer from './components/Explainer.jsx'
 import HardPart from './components/HardPart.jsx'
 import Batch from './components/Batch.jsx'
 import Footer from './components/Footer.jsx'
+import Gate from './components/gate/Gate.jsx'
 import { fetchHealth, predictImage, rejectReason } from './lib/api.js'
 
 /**
@@ -14,6 +15,7 @@ import { fetchHealth, predictImage, rejectReason } from './lib/api.js'
  * mixing the two made the hero panel flicker between phases.
  */
 export default function App() {
+  const [entered, setEntered] = useState(false)
   const [phase, setPhase] = useState('idle')
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
@@ -25,9 +27,17 @@ export default function App() {
   const objectUrl = useRef(null)
   const abort = useRef(null)
 
+  // Held until entry so the landing page itself makes no network calls, and
+  // so the status in the header is fresh when the tool appears.
   useEffect(() => {
+    if (!entered) return
     fetchHealth().then(setHealth)
-  }, [])
+  }, [entered])
+
+  // The gate leaves the page scrolled wherever the visitor stopped reading.
+  useEffect(() => {
+    if (entered) window.scrollTo(0, 0)
+  }, [entered])
 
   // Revoke the previous preview URL whenever it is replaced, and on unmount.
   useEffect(() => () => {
@@ -86,24 +96,29 @@ export default function App() {
 
   return (
     <>
-      <div className="pp-grain" aria-hidden="true" />
-      <div className="pp-shell">
-        <Nav health={health} />
-        <Hero
-          phase={phase}
-          result={result}
-          error={error}
-          preview={preview}
-          fileMeta={fileMeta}
-          onFile={analyse}
-          onRetry={retry}
-          onReset={reset}
-        />
-        <Explainer />
-        <HardPart />
-        <Batch />
-        <Footer />
-      </div>
+      {/* Grain belongs to the app's darkroom look; the gate is clean stock. */}
+      {entered && <div className="pp-grain" aria-hidden="true" />}
+      {!entered ? (
+        <Gate onEnter={() => setEntered(true)} />
+      ) : (
+        <div className="pp-shell">
+          <Nav health={health} />
+          <Hero
+            phase={phase}
+            result={result}
+            error={error}
+            preview={preview}
+            fileMeta={fileMeta}
+            onFile={analyse}
+            onRetry={retry}
+            onReset={reset}
+          />
+          <Explainer />
+          <HardPart />
+          <Batch />
+          <Footer />
+        </div>
+      )}
     </>
   )
 }
