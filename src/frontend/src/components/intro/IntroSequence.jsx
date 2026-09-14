@@ -214,6 +214,9 @@ export default function IntroSequence({ onDone }) {
     <motion.div
       className={s.overlay}
       ref={stageRef}
+      // Pinned explicitly: the app behind is already on the dark palette, so
+      // without this the overlay would animate up from dark to cream on mount.
+      initial={{ backgroundColor: '#ebe9e4', opacity: 1 }}
       animate={{
         backgroundColor: dark ? '#111111' : '#ebe9e4',
         opacity: fading ? 0 : 1,
@@ -226,7 +229,9 @@ export default function IntroSequence({ onDone }) {
       <motion.button
         type="button"
         className={s.skip}
-        onClick={onDone}
+        // Fades out the same way the scrolled-through ending does, rather than
+        // cutting straight from this palette to the tool's.
+        onClick={() => setFading(true)}
         animate={{ color: dark ? '#8f8b83' : '#6a6a6a' }}
       >
         SKIP <span aria-hidden="true">&rarr;</span>

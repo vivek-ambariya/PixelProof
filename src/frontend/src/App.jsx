@@ -45,11 +45,14 @@ export default function App() {
     if (stage === 'app') window.scrollTo(0, 0)
   }, [stage])
 
-  // The tool runs on the inverted palette; the landing page and intro do not.
+  // The tool runs on the inverted palette. This is applied from the intro
+  // onwards, not from 'app': the intro fades out to reveal the app already
+  // mounted behind it, so if the flip waited for 'app' the fade would show a
+  // frame of the light palette before snapping to dark.
   useEffect(() => {
     const cls = document.documentElement.classList
-    if (stage === 'app') cls.add('pp-app')
-    else cls.remove('pp-app')
+    if (stage === 'gate') cls.remove('pp-app')
+    else cls.add('pp-app')
     return () => cls.remove('pp-app')
   }, [stage])
 
