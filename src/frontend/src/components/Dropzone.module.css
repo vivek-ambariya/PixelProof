@@ -11,7 +11,7 @@
   text-align: center;
   transition: border-color var(--pp-dur-fast), background var(--pp-dur-fast);
 }
-.zone:hover { border-color: var(--pp-teal); background: #131010; }
+.zone:hover { border-color: var(--pp-teal); background: var(--pp-rule); }
 
 /* The dropzone is a primary control, so its focus ring is deliberately
    stronger than the global one. */
@@ -23,7 +23,7 @@
 
 .dragging {
   border-color: var(--pp-teal);
-  background: #131010;
+  background: var(--pp-rule);
 }
 
 .plus { width: 46px; height: 46px; border: 1px solid var(--pp-teal); position: relative; margin-bottom: 24px; flex: none; }

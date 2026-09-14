@@ -1,34 +1,38 @@
-/* Design tokens taken from design/PixelProof.dc.html. Every colour, font and
-   motion duration in the app reads from here rather than being hard-coded. */
+/* Design tokens. Every colour, font and motion duration in the product reads
+   from here rather than being hard-coded, so the landing page, the intro and
+   the tool share one palette. */
 :root {
   /* Ground and ink */
-  --pp-bg: #0b0908;
-  --pp-panel: #100d0c;
-  --pp-panel-deep: #0d0b0a;
-  --pp-rule: #241f1c;
-  --pp-rule-soft: #1a1614;
-  --pp-rule-strong: #443c36;
+  --pp-bg: #ebe9e4;
+  --pp-panel: #e4e1da;
+  --pp-panel-deep: #e7e4dd;
+  --pp-rule: #dbdbdb;
+  --pp-rule-soft: #e1dfd8;
+  --pp-rule-strong: #c2beb5;
 
-  --pp-text: #ece7e1;
-  --pp-text-2: #c6bfb8;
-  --pp-text-3: #a8a09a;
-  --pp-muted: #8a807a;
-  --pp-muted-2: #6f6660;
-  --pp-muted-3: #4a4340;
+  --pp-text: #111111;
+  --pp-text-2: #333333;
+  --pp-text-3: #555555;
+  --pp-muted: #6a6a6a;
+  --pp-muted-2: #8a8a8a;
+  --pp-muted-3: #aaaaaa;
 
-  /* Teal is the interactive colour; amber carries heat and AI-likelihood. */
-  --pp-teal: #4fd8c4;
-  --pp-teal-hi: #7fe8d8;
-  --pp-amber: #e0a13a;
-  --pp-amber-hi: #eeb45c;
-  --pp-amber-deep: #c8892f;
-  --pp-heat-low: #2878be;
-  --pp-warn-rule: #6b3a1e;
-  --pp-warn-bg: #150f0c;
+  /* One accent carries every interactive state and also stands for heat and
+     AI-likelihood, so --pp-teal and --pp-amber deliberately coincide.
+     --pp-real is the exception: the verdict readout has to keep "real" and
+     "AI-likely" told apart at a glance, so it gets its own hue. */
+  --pp-teal: #ff4c24;
+  --pp-teal-hi: #d93c18;
+  --pp-amber: #ff4c24;
+  --pp-amber-hi: #d93c18;
+  --pp-amber-deep: #c2340f;
+  --pp-real: #0e7c6a;
+  --pp-heat-low: #1f5f9e;
+  --pp-warn-rule: #e8b5a3;
+  --pp-warn-bg: #f6e7e1;
 
-  /* Type. --pp-display is the condensed ultrabold cut used for big headlines;
-     it lives here rather than in the gate so the intro overlay can read it too. */
-  --pp-sans: Archivo, "Helvetica Neue", system-ui, sans-serif;
+  /* Type. --pp-display is the condensed ultrabold cut used for big headlines. */
+  --pp-sans: Inter, "Helvetica Neue", system-ui, sans-serif;
   --pp-display: Archivo, "Helvetica Neue", system-ui, sans-serif;
   --pp-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
@@ -40,6 +44,36 @@
 
   --pp-max: 1240px;
   --pp-gutter: 56px;
+}
+
+/* The tool runs inverted: the landing page's ground becomes its ink and vice
+   versa, so diving in reads as a deliberate switch rather than more of the same
+   page. Set on <html> while the app is mounted, so body and any fixed layer
+   follow. Only the values that must flip are listed; the accent does not. */
+:root.pp-app {
+  --pp-bg: #111111;
+  --pp-panel: #1a1a19;
+  --pp-panel-deep: #161615;
+  --pp-rule: #2c2c2a;
+  --pp-rule-soft: #212120;
+  --pp-rule-strong: #46443f;
+
+  --pp-text: #ebe9e4;
+  --pp-text-2: #d6d3cc;
+  --pp-text-3: #b3afa7;
+  --pp-muted: #8f8b83;
+  --pp-muted-2: #6f6b64;
+  --pp-muted-3: #4d4a45;
+
+  /* Hover lifts rather than deepens on a dark ground, and both semantic hues
+     need more light in them to stay legible. */
+  --pp-teal-hi: #ff6a48;
+  --pp-amber-hi: #ff6a48;
+  --pp-amber-deep: #e04a20;
+  --pp-real: #35c9ac;
+  --pp-heat-low: #4a90d9;
+  --pp-warn-rule: #6b3a1e;
+  --pp-warn-bg: #1a100c;
 }
 
 @media (max-width: 900px) {

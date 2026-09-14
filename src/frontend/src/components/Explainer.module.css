@@ -35,7 +35,7 @@
   color: var(--pp-muted-2);
 }
 
-.canvas { flex: 1; position: relative; background: #0b0908; overflow: hidden; }
+.canvas { flex: 1; position: relative; background: var(--pp-panel); overflow: hidden; }
 
 .figCaption {
   font-family: var(--pp-mono);
@@ -44,7 +44,7 @@
   color: var(--pp-muted);
 }
 .hot { color: var(--pp-amber); }
-.cool { color: var(--pp-teal); }
+.cool { color: var(--pp-real); }
 
 .step {
   min-height: min(74vh, 560px);
@@ -97,20 +97,20 @@
 }
 
 /* --- figure internals --- */
-.spectrum { position: absolute; inset: 0; background: radial-gradient(48% 48% at 50% 50%, rgba(236,231,225,.22), rgba(236,231,225,.02) 62%, transparent 72%); }
+.spectrum { position: absolute; inset: 0; background: radial-gradient(48% 48% at 50% 50%, color-mix(in srgb, var(--pp-text) 16%, transparent), color-mix(in srgb, var(--pp-text) 3%, transparent) 62%, transparent 72%); }
 .lattice {
   position: absolute; inset: 0; opacity: 0;
-  background-image: radial-gradient(circle, rgba(224,161,58,.95) 1.4px, transparent 1.6px);
+  background-image: radial-gradient(circle, rgba(255,76,36,.9) 1.4px, transparent 1.6px);
   background-size: 44px 44px;
   background-position: center;
 }
-.axisV { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(236,231,225,.12); }
-.axisH { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(236,231,225,.12); }
+.axisV { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--pp-text) 13%, transparent); }
+.axisH { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: color-mix(in srgb, var(--pp-text) 13%, transparent); }
 
 .noiseSvg, .lightSvg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .legendLine {
   position: absolute; left: 14px;
   font-family: var(--pp-mono); font-size: 9px; letter-spacing: 0.1em;
 }
-.legendSensor { top: 12px; color: var(--pp-teal); }
+.legendSensor { top: 12px; color: var(--pp-real); }
 .legendGen { top: 30px; color: var(--pp-amber); }

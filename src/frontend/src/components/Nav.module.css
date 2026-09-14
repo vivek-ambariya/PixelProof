@@ -49,7 +49,7 @@
 
 .meta { display: flex; gap: 26px; align-items: center; }
 .value { color: var(--pp-text); }
-.online { color: var(--pp-teal); }
+.online { color: var(--pp-real); }
 .offline { color: var(--pp-amber); }
 
 .link {

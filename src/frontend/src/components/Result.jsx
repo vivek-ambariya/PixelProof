@@ -11,7 +11,7 @@ function toneFor(result) {
 
 function barColor(result) {
   if (result.confidence_band === 'inconclusive') return 'var(--pp-muted)'
-  return result.verdict?.includes('AI') ? 'var(--pp-amber)' : 'var(--pp-teal)'
+  return result.verdict?.includes('AI') ? 'var(--pp-amber)' : 'var(--pp-real)'
 }
 
 export default function Result({ result, preview, onReset }) {

@@ -50,9 +50,9 @@ function FigureBody({ index }) {
       <div className={s.canvas}>
         <svg className={s.noiseSvg} viewBox="0 0 300 180" preserveAspectRatio="none">
           <path d="M10,160 C70,150 140,120 290,30" fill="none"
-                stroke="#4fd8c4" strokeWidth="1.5" data-sensor-line />
+                stroke="var(--pp-real)" strokeWidth="1.5" data-sensor-line />
           <path d="M10,120 C90,118 180,116 290,113" fill="none"
-                stroke="#e0a13a" strokeWidth="1.5" strokeDasharray="4 3" />
+                stroke="var(--pp-amber)" strokeWidth="1.5" strokeDasharray="4 3" />
         </svg>
         <span className={`${s.legendLine} ${s.legendSensor}`}>SENSOR — RISES WITH SIGNAL</span>
         <span className={`${s.legendLine} ${s.legendGen}`}>GENERATED — NEARLY FLAT</span>
@@ -62,13 +62,13 @@ function FigureBody({ index }) {
   return (
     <div className={s.canvas}>
       <svg className={s.lightSvg} viewBox="0 0 300 180">
-        <ellipse cx="95" cy="128" rx="34" ry="9" fill="#4fd8c4" opacity="0.28" />
-        <ellipse cx="205" cy="128" rx="34" ry="9" fill="#e0a13a" opacity="0.28" />
-        <circle cx="95" cy="104" r="26" fill="none" stroke="#8a807a" strokeWidth="1" />
-        <circle cx="205" cy="104" r="26" fill="none" stroke="#8a807a" strokeWidth="1" />
-        <line x1="95" y1="104" x2="48" y2="52" stroke="#4fd8c4" strokeWidth="1.5" />
-        <line x1="205" y1="104" x2="242" y2="46" stroke="#e0a13a" strokeWidth="1.5" />
-        <text x="150" y="40" fill="#e0a13a" fontSize="12"
+        <ellipse cx="95" cy="128" rx="34" ry="9" fill="var(--pp-real)" opacity="0.28" />
+        <ellipse cx="205" cy="128" rx="34" ry="9" fill="var(--pp-amber)" opacity="0.28" />
+        <circle cx="95" cy="104" r="26" fill="none" stroke="var(--pp-muted)" strokeWidth="1" />
+        <circle cx="205" cy="104" r="26" fill="none" stroke="var(--pp-muted)" strokeWidth="1" />
+        <line x1="95" y1="104" x2="48" y2="52" stroke="var(--pp-real)" strokeWidth="1.5" />
+        <line x1="205" y1="104" x2="242" y2="46" stroke="var(--pp-amber)" strokeWidth="1.5" />
+        <text x="150" y="40" fill="var(--pp-amber)" fontSize="12"
               fontFamily="JetBrains Mono, monospace" textAnchor="middle">&#916; 24&deg;</text>
       </svg>
     </div>

@@ -9,10 +9,10 @@
 .cards { display: flex; flex-direction: column; gap: 20px; }
 .card { border-left: 1px solid var(--pp-rule-strong); padding-left: 20px; }
 .cardAmber { border-left-color: var(--pp-amber-deep); }
-.cardTeal { border-left-color: var(--pp-teal); }
+.cardTeal { border-left-color: var(--pp-real); }
 .cardLabel { font-family: var(--pp-mono); font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; }
 .amber { color: var(--pp-amber-deep); }
-.teal { color: var(--pp-teal); }
+.teal { color: var(--pp-real); }
 .cardBody { margin: 9px 0 0; font-size: 14px; line-height: 1.7; color: var(--pp-text-3); }
 .strong { color: var(--pp-text-2); }
 .rule { margin-top: 56px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-family: var(--pp-mono); font-size: 10px; letter-spacing: 0.11em; color: var(--pp-muted-3); text-transform: uppercase; }

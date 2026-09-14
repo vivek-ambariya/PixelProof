@@ -19,10 +19,13 @@
 
 .title {
   margin: 20px 0 0;
-  font-size: 82px;
-  line-height: 0.94;
-  letter-spacing: -0.035em;
-  font-weight: 600;
+  font-family: var(--pp-display);
+  font-weight: 900;
+  font-stretch: 76%;
+  text-transform: uppercase;
+  letter-spacing: -0.022em;
+  font-size: clamp(40px, 5.6vw, 76px);
+  line-height: 0.92;
 }
 
 .lede {
@@ -105,9 +108,9 @@
 .errorBody { margin: 0; color: var(--pp-text-3); font-size: 15px; line-height: 1.6; max-width: 42ch; }
 .errorActions { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
 .primary {
-  background: var(--pp-amber);
+  background: var(--pp-text);
   border: none;
-  color: #100d0c;
+  color: var(--pp-bg);
   font-family: var(--pp-mono);
   font-size: 11px;
   font-weight: 700;
@@ -116,7 +119,7 @@
   padding: 12px 20px;
   cursor: pointer;
 }
-.primary:hover { background: var(--pp-amber-hi); }
+.primary:hover { background: var(--pp-amber); }
 .ghost {
   background: transparent;
   border: 1px solid var(--pp-rule-strong);
