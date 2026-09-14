@@ -48,6 +48,12 @@ BACKBONES: dict[str, dict] = {
         "frozen": False,
         "feat_dim": 2048,
     },
+     "3-stream": {
+        "source": "custom",
+        "frozen": False,
+        "feat_dim": 2066,
+    },
+
 }
 
 DEFAULT_BACKBONE = "clip_vit_b16"
@@ -92,9 +98,22 @@ class PixelProofNet(nn.Module):
         spec = BACKBONES[backbone]
         self.frozen = spec["frozen"]
 
-        if spec["source"] == "timm":
-            import timm
+        if backbone == "3-stream":
+            from .frequency_features import ThreeStreamDetector
 
+            self.model = ThreeStreamDetector(
+                spatial_pretrained=pretrained,
+                hidden=hidden,
+                p_drop=p_drop,
+            )
+            self.backbone = None
+            self.head = None
+            feat_dim = spec["feat_dim"]
+            self.img_size = 224
+            self.mean, self.std = IMAGENET_MEAN, IMAGENET_STD
+
+        elif spec["source"] == "timm":
+            import timm
             self.backbone = timm.create_model(
                 spec["timm_name"], pretrained=pretrained, num_classes=0
             )
@@ -103,14 +122,13 @@ class PixelProofNet(nn.Module):
             self.mean = tuple(cfg.get("mean") or IMAGENET_MEAN)
             self.std = tuple(cfg.get("std") or IMAGENET_STD)
             feat_dim = self.backbone.num_features
+
         else:
             from torchvision import models
-
             self.backbone = models.resnet50(
                 weights=spec["weights"] if pretrained else None
             )
             feat_dim = self.backbone.fc.in_features
-            # Identity in place of the classifier gives pooled 2048-d features.
             self.backbone.fc = nn.Identity()
             self.img_size = 224
             self.mean, self.std = IMAGENET_MEAN, IMAGENET_STD
@@ -151,12 +169,16 @@ class PixelProofNet(nn.Module):
         activation gradients for Grad-CAM and therefore calls the backbone
         directly rather than going through here.
         """
+        if self.backbone_name == "3-stream":
+            return self.model.forward_features(x)
         if self.frozen:
             with torch.no_grad():
                 return self.backbone(x)
         return self.backbone(x)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.backbone_name == "3-stream":
+            return self.model(x)
         return self.head(self.forward_features(x))
 
 
