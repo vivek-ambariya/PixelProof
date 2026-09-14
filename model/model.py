@@ -27,8 +27,7 @@ calibrate.py -- never a bare sigmoid.
 """
 
 from __future__ import annotations
-from .frequency_features import ThreeStreamDetector
-import timm
+
 import torch
 import torch.nn as nn
 
@@ -49,7 +48,7 @@ BACKBONES: dict[str, dict] = {
         "frozen": False,
         "feat_dim": 2048,
     },
-        "3-stream": {
+    "3-stream": {
         "source": "custom",
         "frozen": False,
         "feat_dim": 2066,
@@ -83,109 +82,66 @@ class PixelProofNet(nn.Module):
     """Backbone + head. ``forward`` returns logits of shape (B,)."""
 
     def __init__(
-            self,
-            backbone: str = DEFAULT_BACKBONE,
-            pretrained: bool = True,
-            hidden: int = 256,
-            p_drop: float = 0.3,
-        ) -> None:
-            super().__init__()
+        self,
+        backbone: str = DEFAULT_BACKBONE,
+        pretrained: bool = True,
+        hidden: int = 256,
+        p_drop: float = 0.3,
+    ) -> None:
+        super().__init__()
+        if backbone not in BACKBONES:
+            raise ValueError(
+                f"unknown backbone {backbone!r}; choose from {sorted(BACKBONES)}"
+            )
+        self.backbone_name = backbone
+        spec = BACKBONES[backbone]
+        self.frozen = spec["frozen"]
 
-            if backbone not in BACKBONES:
-                raise ValueError(
-                    f"unknown backbone {backbone!r}; choose from {sorted(BACKBONES)}"
-                )
+        if backbone == "3-stream":
+            from frequency_features import ThreeStreamDetector
 
-            self.backbone_name = backbone
-            spec = BACKBONES[backbone]
-            self.frozen = spec["frozen"]
+            self.model = ThreeStreamDetector(
+                spatial_pretrained=pretrained,
+                hidden=hidden,
+                p_drop=p_drop,
+            )
+            self.backbone = None
+            self.head = None
+            feat_dim = spec["feat_dim"]
+            self.img_size = 224
+            self.mean, self.std = IMAGENET_MEAN, IMAGENET_STD
 
-            # ================================================================
-            # 3-STREAM
-            # ================================================================
-            if backbone == "3-stream":
-                self.model = ThreeStreamDetector(
-                    spatial_pretrained=pretrained,
-                    hidden=hidden,
-                    p_drop=p_drop,
-                )
+        elif spec["source"] == "timm":
+            import timm
+            self.backbone = timm.create_model(
+                spec["timm_name"], pretrained=pretrained, num_classes=0
+            )
+            cfg = getattr(self.backbone, "pretrained_cfg", {}) or {}
+            self.img_size = (cfg.get("input_size") or (3, 224, 224))[-1]
+            self.mean = tuple(cfg.get("mean") or IMAGENET_MEAN)
+            self.std = tuple(cfg.get("std") or IMAGENET_STD)
+            feat_dim = self.backbone.num_features
 
-                self.feat_dim = 2066
-                self.img_size = 224
-                self.mean = IMAGENET_MEAN
-                self.std = IMAGENET_STD
+        else:
+            from torchvision import models
+            self.backbone = models.resnet50(
+                weights=spec["weights"] if pretrained else None
+            )
+            feat_dim = self.backbone.fc.in_features
+            self.backbone.fc = nn.Identity()
+            self.img_size = 224
+            self.mean, self.std = IMAGENET_MEAN, IMAGENET_STD
 
-            # ================================================================
-            # CLIP
-            # ================================================================
-            elif spec["source"] == "timm":
-                import timm
+        if feat_dim != spec["feat_dim"]:
+            # Not fatal, but the registry is used to size the cache, so say so.
+            print(f"  note: {backbone} feat_dim is {feat_dim}, "
+                  f"registry said {spec['feat_dim']}")
+        self.feat_dim = feat_dim
+        self.head = DetectorHead(feat_dim, hidden=hidden, p_drop=p_drop)
 
-                self.backbone = timm.create_model(
-                    spec["timm_name"],
-                    pretrained=pretrained,
-                    num_classes=0,
-                )
+        if self.frozen:
+            self.freeze_backbone()
 
-                cfg = getattr(self.backbone, "pretrained_cfg", {}) or {}
-
-                self.img_size = (cfg.get("input_size") or (3, 224, 224))[-1]
-                self.mean = tuple(cfg.get("mean") or IMAGENET_MEAN)
-                self.std = tuple(cfg.get("std") or IMAGENET_STD)
-
-                feat_dim = self.backbone.num_features
-
-                if feat_dim != spec["feat_dim"]:
-                    print(
-                        f"  note: {backbone} feat_dim is {feat_dim}, "
-                        f"registry said {spec['feat_dim']}"
-                    )
-
-                self.feat_dim = feat_dim
-
-                self.head = DetectorHead(
-                    feat_dim,
-                    hidden=hidden,
-                    p_drop=p_drop,
-                )
-
-                if self.frozen:
-                    self.freeze_backbone()
-
-            # ================================================================
-            # RESNET50
-            # ================================================================
-            else:
-                from torchvision import models
-
-                self.backbone = models.resnet50(
-                    weights=spec["weights"] if pretrained else None
-                )
-
-                feat_dim = self.backbone.fc.in_features
-
-                self.backbone.fc = nn.Identity()
-
-                self.img_size = 224
-                self.mean = IMAGENET_MEAN
-                self.std = IMAGENET_STD
-
-                if feat_dim != spec["feat_dim"]:
-                    print(
-                        f"  note: {backbone} feat_dim is {feat_dim}, "
-                        f"registry said {spec['feat_dim']}"
-                    )
-
-                self.feat_dim = feat_dim
-
-                self.head = DetectorHead(
-                    feat_dim,
-                    hidden=hidden,
-                    p_drop=p_drop,
-                )
-
-                if self.frozen:
-                    self.freeze_backbone()
     def freeze_backbone(self) -> None:
         """Disable gradients for every backbone parameter and keep it in eval mode.
 
@@ -204,14 +160,19 @@ class PixelProofNet(nn.Module):
             self.backbone.eval()
         return self
 
-    def forward_features(self, x):
+    def forward_features(self, x: torch.Tensor) -> torch.Tensor:
+        """Pooled backbone features, (B, feat_dim).
+
+        Gradients are suppressed only for a frozen backbone. Note this is
+        ``no_grad`` on the *feature* path used during training; explain.py needs
+        activation gradients for Grad-CAM and therefore calls the backbone
+        directly rather than going through here.
+        """
         if self.backbone_name == "3-stream":
             return self.model.forward_features(x)
-
         if self.frozen:
             with torch.no_grad():
                 return self.backbone(x)
-
         return self.backbone(x)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
