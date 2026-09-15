@@ -29,6 +29,18 @@ import torch.nn as nn
 from scipy import fftpack
 
 
+# Why every stream below calls ``.detach()`` before ``.numpy()``:
+#
+# The frequency and noise streams are *fixed* transforms -- FFT/DCT statistics
+# and Laplacian/Gaussian residuals -- not learned ones, so nothing here needs a
+# gradient. Converting straight to numpy would still be fine during training,
+# where only parameters require grad, but Grad-CAM marks the *input* tensor
+# requires_grad (see src/explain.py) and then ``.numpy()`` raises. Detaching
+# says what is already true -- these features are constants with respect to the
+# backward pass -- and keeps the spatial stream's gradients, which are the ones
+# the heat-map is built from, flowing normally through the concatenation.
+
+
 class FrequencyAnalyzer(nn.Module):
     """Extract frequency-domain features via FFT and DCT analysis.
     
@@ -57,7 +69,7 @@ class FrequencyAnalyzer(nn.Module):
         features_list = []
 
         for i in range(batch_size):
-            img = images[i].cpu().numpy()  # (3, 224, 224)
+            img = images[i].detach().cpu().numpy()  # (3, 224, 224)
             
             # Convert to grayscale
             if img.max() > 1.1:  # [0, 255] range
@@ -180,7 +192,7 @@ class NoiseAnalyzer(nn.Module):
         )  # (B, 1, 224, 224)
 
         for i in range(batch_size):
-            lap = laplacian[i, 0].cpu().numpy()  # (224, 224)
+            lap = laplacian[i, 0].detach().cpu().numpy()  # (224, 224)
 
             # Edge density: proportion of pixels with significant edge response
             edge_threshold = np.quantile(np.abs(lap), 0.75)
@@ -209,8 +221,8 @@ class NoiseAnalyzer(nn.Module):
             # === NOISE RESIDUAL ===
             # Compute noise residual: image minus Gaussian-blurred version
             from scipy.ndimage import gaussian_filter
-            blurred = gaussian_filter(gray[i, 0].cpu().numpy(), sigma=1.0)
-            noise_residual = gray[i, 0].cpu().numpy() - blurred
+            blurred = gaussian_filter(gray[i, 0].detach().cpu().numpy(), sigma=1.0)
+            noise_residual = gray[i, 0].detach().cpu().numpy() - blurred
             noise_energy = np.var(noise_residual)
 
             # Combine all noise features

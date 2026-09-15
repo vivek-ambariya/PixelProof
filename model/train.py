@@ -354,6 +354,14 @@ def main() -> None:
                          "injected noise. Both erase detection cues (per-channel "
                          "sensor-noise correlation, luminance-dependent variance), "
                          "so they are off by default.")
+    ap.add_argument("--monitor-split", default="auto",
+                    choices=["auto", "val", "val_unseen_generator",
+                             "val_unseen_content"],
+                    help="which split early stopping selects the checkpoint on. "
+                         "'auto' (default) preserves the historical behaviour "
+                         "and warns when it picks the split you are likely to "
+                         "report. Set it explicitly to keep model selection "
+                         "auditable and free of leakage.")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--device", default="auto")
     ap.add_argument("--limit-train", type=int, default=0,
@@ -464,9 +472,31 @@ def main() -> None:
     if args.limit_train:
         splits["train"] = splits["train"].iloc[:args.limit_train].reset_index(drop=True)
 
-    # The split early stopping watches. Prefer a genuine unseen-generator split.
-    if len(splits.get("val_unseen_generator", [])) > 0:
+    # The split early stopping watches.
+    #
+    # WHY THIS IS EXPLICIT: selecting the checkpoint on a split you then report
+    # as a held-out generalisation metric is a model-selection leak -- the
+    # reported number is biased upward by however many epochs you searched over.
+    # 'auto' keeps the original behaviour (prefer the unseen-generator split
+    # whenever one exists) because earlier checkpoints were trained that way and
+    # must stay reproducible, but it now says so loudly. Pass --monitor-split
+    # explicitly to make the choice auditable.
+    if args.monitor_split != "auto":
+        monitor = args.monitor_split
+        if len(splits.get(monitor, [])) == 0:
+            raise SystemExit(
+                f"--monitor-split {monitor} was requested but that split is "
+                f"empty. Available non-empty: "
+                f"{[n for n in ('val', 'val_unseen_generator', 'val_unseen_content') if len(splits.get(n, [])) > 0]}"
+            )
+    elif len(splits.get("val_unseen_generator", [])) > 0:
         monitor = "val_unseen_generator"
+        print("WARNING  --monitor-split is 'auto' and val_unseen_generator is")
+        print("         non-empty, so early stopping selects on it. If you then")
+        print("         REPORT val_unseen_generator AUC as a held-out result,")
+        print("         that number is model-selection-leaked and is not")
+        print("         comparable to a model selected on another split.")
+        print("         Pass --monitor-split val_unseen_content to avoid this.")
     elif len(splits.get("val_unseen_content", [])) > 0:
         monitor = "val_unseen_content"
         print("WARNING  val_unseen_generator is EMPTY, so early stopping falls back")

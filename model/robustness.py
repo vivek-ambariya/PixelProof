@@ -68,7 +68,9 @@ DEFAULT_SPLITS = ["test", "val_unseen_generator"]
 
 # Known models, in report order. Each entry is (key, label, checkpoint filename).
 KNOWN_MODELS = [
-    ("clip", "CLIP ViT-B/16 + linear head (primary)", "clip_vit_b16_best.pth"),
+    ("three_stream", "3-stream: spatial + frequency + noise",
+     "3-stream_best.pth"),
+    ("clip", "CLIP ViT-B/16 + linear head", "clip_vit_b16_best.pth"),
     ("resnet", "ResNet50, fine-tuned end-to-end (baseline)", "resnet50_best.pth"),
 ]
 
@@ -487,8 +489,9 @@ def main() -> None:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--data", default=str(ROOT / "data" / "csv"))
     ap.add_argument("--splits", nargs="*", default=DEFAULT_SPLITS)
-    ap.add_argument("--models", nargs="*", default=["clip", "resnet"],
-                    choices=["clip", "resnet"])
+    ap.add_argument("--models", nargs="*",
+                    default=["three_stream", "clip", "resnet"],
+                    choices=["three_stream", "clip", "resnet"])
     ap.add_argument("--checkpoint", default=None,
                     help="score one explicit checkpoint instead of --models")
     ap.add_argument("--conditions", nargs="*", default=[k for k, *_ in CONDITIONS],

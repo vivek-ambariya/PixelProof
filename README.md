@@ -77,7 +77,26 @@ during training. Threshold chosen at **FPR ≤ 5%** on `val` (wrongly flagging a
 real photo is the costly error) — see [report/model_report.md](report/model_report.md)
 for the full derivation.
 
-### Primary model — frozen CLIP ViT-B/16 + linear head
+### 3-stream (spatial + frequency + noise) — highest raw score, but see the caveat
+Calibration: T=1.5212, threshold=0.7749. Trained 8 epochs; a fine-tuned
+ResNet50 spatial stream concatenated with 10 hand-built FFT/DCT frequency
+features and 8 Laplacian/residual noise features (2066-d fused), one head.
+
+| split | ROC-AUC | macro-F1 | accuracy | FPR | recall (AI) | confusion (tn/fp/fn/tp) |
+|---|---|---|---|---|---|---|
+| test (in-distribution) | 0.9849 | 0.9374 | 0.9374 | 0.0480 | 0.9228 | 9520 / 480 / 772 / 9228 |
+| val_unseen_content (proxy: horse+ship held out) | 0.9564 | 0.8630 | 0.8640 | 0.0431 | 0.7729 | 9379 / 422 / 2271 / 7729 |
+| **val_unseen_generator (ProGAN, true unseen generator)** | **0.9662** | 0.8869 | 0.8875 | 0.0400 | 0.8150 | 960 / 40 / 185 / 815 |
+
+> **⚠️ Read this number with the caveat below — it is not directly comparable
+> to the other two models.** This run selected its best epoch on
+> `val_unseen_generator` (`monitor_split: val_unseen_generator`), *the same
+> split reported here*. CLIP and ResNet50 both selected on `val_unseen_content`.
+> Choosing the checkpoint on the split you then report is a model-selection
+> leak, and it biases 0.9662 upward. See **Model selection, and an honest
+> correction** below.
+
+### Frozen CLIP ViT-B/16 + linear head (the shipped default)
 Calibration: T=0.7813, threshold=0.7833
 
 | split | ROC-AUC | macro-F1 | accuracy | FPR | recall (AI) | confusion (tn/fp/fn/tp) |
@@ -131,19 +150,72 @@ conditions images actually arrive in — is **not implemented in this build**;
 it is what the measurement points at, stated as a next step rather than a
 claim.
 
-**The finding that matters most, honestly reported:** the fine-tuned ResNet50
-baseline generalises to a *genuinely new* generator (ProGAN, a GAN, never seen
-in training) **slightly better** than the frozen-CLIP primary model (0.9519 vs
-0.9410 AUC) — the reverse of what a content-holdout proxy suggested before
-ProGAN data was available (see §5, Limitations). Both comfortably beat the
-18–31% accuracy range the problem statement's own reference material cites for
-naively-transferred detectors on unseen generators.
+### Model selection, and an honest correction
+
+The three models were **not selected under the same rule**, and that changes
+what can be claimed:
+
+| model | epoch selected on | `val_unseen_generator` AUC | comparable? |
+|---|---|---|---|
+| CLIP ViT-B/16 | `val_unseen_content` | 0.9410 | ✅ clean |
+| ResNet50 | `val_unseen_content` | 0.9519 | ✅ clean |
+| 3-stream | **`val_unseen_generator`** | 0.9662 | ❌ selected on the split it reports |
+
+3-stream's training log picks epoch 8 precisely because it maximised
+`val_unseen_generator` AUC (0.9662 — the per-epoch values climb 0.9009 → 0.9402
+→ 0.9467 → 0.9292 → 0.9491 → 0.9642 → 0.9659 → 0.9661). Reporting that same
+split as the headline result is a **model-selection leak**: the number is
+optimistically biased and not comparable to the two models selected on a
+different split.
+
+**Applying the other models' rule to 3-stream:** its best `val_unseen_content`
+epoch is **5** (0.9624), and at epoch 5 its `val_unseen_generator` AUC is
+**0.9491**. Under a matched protocol the ranking is therefore:
+
+| ranking by | 1st | 2nd | 3rd |
+|---|---|---|---|
+| `val_unseen_content` (proxy) | CLIP 0.9723 | ResNet50 0.9685 | 3-stream 0.9624 |
+| `val_unseen_generator` (matched selection) | **ResNet50 0.9519** | 3-stream 0.9491 | CLIP 0.9410 |
+
+So **3-stream does not actually beat the ResNet50 baseline once the selection
+rule is matched** — it lands between the two. The frequency and noise streams
+are not demonstrated to help; the apparent +0.0143 gain was an artifact of
+choosing the checkpoint on the evaluation split. Settling this properly needs a
+re-run with `--monitor-split val_unseen_content`; that has not been done, so the
+honest position is *not demonstrated*, not *shown to fail*.
+
+**What survives, and still matters:** the content-holdout proxy ranks CLIP
+**first** and it comes **last** on a genuinely unseen generator — the proxy's
+best model is the real test's worst. Generalising to unseen *content* and to
+unseen *generators* are different problems, and optimising the first can
+actively mislead about the second.
+
+All three comfortably beat the 18–31% accuracy range the problem statement's
+own reference material cites for naively-transferred detectors on unseen
+generators.
 
 ## 5. Architecture, calibration, and limitations
 
-**Architecture.** Two interchangeable backbones behind one head
-(`Dropout → Linear(→256) → GELU → Linear(→1)`):
-- **Primary:** `vit_base_patch16_clip_224.openai` via timm, **entirely frozen**
+**Architecture.** Three interchangeable backbones, selected with
+`--backbone`, behind one head (`Dropout → Linear(→256) → GELU → Linear(→1)`):
+- **`3-stream`** (`model/frequency_features.py`): three parallel
+  feature extractors fused into one 2066-d vector, then the head.
+  - *Spatial* (2048-d): a fine-tuned ResNet50 — content and texture.
+  - *Frequency* (10-d): FFT and DCT statistics. Diffusion and GAN upsamplers
+    leave periodic spectral signatures that are **generator-specific rather
+    than content-specific**, which is the stated reason this stream exists and
+    why it was expected to transfer across generators. §11 names
+    frequency-domain features as a differentiator; this is that idea, built.
+  - *Noise* (8-d): Laplacian and Gaussian-residual statistics — sensor noise
+    and edge-coherence patterns that synthesis tends not to reproduce.
+  The fusion is deliberately lopsided (2048 learned + 18 hand-built), the
+  intent being that the hand-built streams act as a *bias correction* on a CNN
+  that would otherwise key on content. **Whether they do is not established** —
+  see "Model selection, and an honest correction" in §4. Because the ResNet50
+  baseline *is* this model's spatial stream in isolation, a matched-protocol
+  re-run would make this a clean ablation of the frequency and noise streams;
+  that re-run has not happened, so no benefit is claimed.
+- **Secondary:** `vit_base_patch16_clip_224.openai` via timm, **entirely frozen**
   (verified: 197,121 of 85,996,545 params trainable, 0.229%). Chosen because
   frozen-CLIP-features-plus-linear-probe is reported to generalise across
   generators better than end-to-end fine-tuning (Ojha et al. 2023,
@@ -152,7 +224,9 @@ naively-transferred detectors on unseen generators.
   image: clean / JPEG-q40 / downscale-upscale / blur) so the head trains in
   under a second per epoch.
 - **Baseline:** `resnet50` (torchvision, ImageNet weights), fine-tuned end to
-  end, same head.
+  end, same head. This is also exactly the 3-stream model's spatial stream in
+  isolation, which makes the comparison between them a clean ablation of the
+  frequency and noise streams rather than a comparison of two unrelated models.
 
 **Calibration.** Temperature scaling (`model/calibrate.py`) fitted on `val`
 only, then a threshold chosen for **FPR ≤ 5%** — never a bare sigmoid. AUC is

@@ -72,6 +72,11 @@ class _GradPath(nn.Module):
         self.net = net
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.net.backbone_name == "3-stream":
+            # ThreeStreamDetector owns its head internally (net.head is None on
+            # the wrapper) and already returns (B,) logits, unlike the other two
+            # backbones where PixelProofNet applies the head itself.
+            return self.net.model(x).unsqueeze(-1)
         return self.net.head(self.net.backbone(x)).unsqueeze(-1)
 
 
@@ -82,6 +87,14 @@ def _target_layer_and_reshape(net):
     a 2D grid with the prefix (class) tokens dropped. For a CNN the last
     convolutional stage is already spatial.
     """
+    if net.backbone_name == "3-stream":
+        # The spatial stream is a ResNet50 with the same layer4 shape as the
+        # standalone resnet50 backbone; the frequency and noise streams are
+        # hand-crafted scalar features with no spatial map, so they cannot
+        # contribute a heat-map location and are outside the CAM entirely.
+        # Gradients into layer4 still flow correctly through the concatenation
+        # even though the other two streams are non-spatial.
+        return [net.model.spatial_stream.backbone.layer4[-1]], None
     if net.backbone_name == "resnet50":
         return [net.backbone.layer4[-1]], None
 

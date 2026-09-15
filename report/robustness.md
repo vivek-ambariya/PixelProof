@@ -22,7 +22,39 @@ Each model keeps the operating point calibrated on **clean** `val`. The threshol
 
 ## Results
 
-### CLIP ViT-B/16 + linear head (primary)
+### 3-stream: spatial + frequency + noise
+
+*3-stream — threshold 0.7749, T=1.5212*
+
+**`test`** (n=4000)
+
+| condition | ROC-AUC | ΔAUC vs clean | accuracy | FPR | recall (AI) |
+|---|---|---|---|---|---|
+| clean | 0.9851 | — | 0.9405 | 0.0528 | 0.9341 |
+| JPEG q90 | 0.9862 | +0.0011 | 0.9425 | 0.0351 | 0.9208 |
+| JPEG q70 | 0.9845 | -0.0006 | 0.9270 | 0.0279 | 0.8834 |
+| JPEG q50 | 0.9827 | -0.0023 | 0.9225 | 0.0224 | 0.8691 |
+| JPEG q30 | 0.9795 | -0.0055 | 0.9163 | 0.0285 | 0.8627 |
+| resize 1/2 | 0.9848 | -0.0002 | 0.9380 | 0.0401 | 0.9168 |
+| resize 1/4 | 0.9837 | -0.0013 | 0.9257 | 0.0279 | 0.8809 |
+| screenshot | 0.9855 | +0.0004 | 0.9293 | 0.0244 | 0.8844 |
+| light edit | 0.9815 | -0.0036 | 0.9260 | 0.1011 | 0.9523 |
+
+**`val_unseen_generator`** (n=2000)
+
+| condition | ROC-AUC | ΔAUC vs clean | accuracy | FPR | recall (AI) |
+|---|---|---|---|---|---|
+| clean | 0.9670 | — | 0.8910 | 0.0500 | 0.8320 |
+| JPEG q90 | 0.9705 | +0.0036 | 0.8815 | 0.0330 | 0.7960 |
+| JPEG q70 | 0.9716 | +0.0047 | 0.8545 | 0.0210 | 0.7300 |
+| JPEG q50 | 0.9655 | -0.0015 | 0.8385 | 0.0200 | 0.6970 |
+| JPEG q30 | 0.9535 | -0.0135 | 0.8285 | 0.0340 | 0.6910 |
+| resize 1/2 | 0.9638 | -0.0032 | 0.8650 | 0.0390 | 0.7690 |
+| resize 1/4 | 0.9530 | -0.0140 | 0.8075 | 0.0230 | 0.6380 |
+| screenshot | 0.9698 | +0.0028 | 0.8525 | 0.0190 | 0.7240 |
+| light edit | 0.9591 | -0.0079 | 0.8920 | 0.1020 | 0.8860 |
+
+### CLIP ViT-B/16 + linear head
 
 *clip_vit_b16 — threshold 0.7833, T=0.7813*
 
@@ -88,16 +120,20 @@ Each model keeps the operating point calibrated on **clean** `val`. The threshol
 
 ## What the numbers say
 
-- **CLIP ViT-B/16 + linear head (primary) / `test`** — clean AUC 0.9829. Mean change across the 8 degraded conditions: -0.0342. Worst condition: **JPEG q30** at 0.9297 (-0.0532). Highest false-positive rate on real photos: light edit at 0.0833 (clean 0.0584).
-- **CLIP ViT-B/16 + linear head (primary) / `val_unseen_generator`** — clean AUC 0.9412. Mean change across the 8 degraded conditions: -0.0567. Worst condition: **JPEG q30** at 0.8218 (-0.1194). Highest false-positive rate on real photos: light edit at 0.0720 (clean 0.0500).
+- **3-stream: spatial + frequency + noise / `test`** — clean AUC 0.9851. Mean change across the 8 degraded conditions: -0.0015. Worst condition: **JPEG q30** at 0.9795 (-0.0055). Highest false-positive rate on real photos: light edit at 0.1011 (clean 0.0528).
+- **3-stream: spatial + frequency + noise / `val_unseen_generator`** — clean AUC 0.9670. Mean change across the 8 degraded conditions: -0.0036. Worst condition: **resize 1/4** at 0.9530 (-0.0140). Highest false-positive rate on real photos: light edit at 0.1020 (clean 0.0500).
+- **CLIP ViT-B/16 + linear head / `test`** — clean AUC 0.9829. Mean change across the 8 degraded conditions: -0.0342. Worst condition: **JPEG q30** at 0.9297 (-0.0532). Highest false-positive rate on real photos: light edit at 0.0833 (clean 0.0584).
+- **CLIP ViT-B/16 + linear head / `val_unseen_generator`** — clean AUC 0.9412. Mean change across the 8 degraded conditions: -0.0567. Worst condition: **JPEG q30** at 0.8218 (-0.1194). Highest false-positive rate on real photos: light edit at 0.0720 (clean 0.0500).
 - **ResNet50, fine-tuned end-to-end (baseline) / `test`** — clean AUC 0.9888. Mean change across the 8 degraded conditions: -0.0037. Worst condition: **JPEG q30** at 0.9776 (-0.0111). Highest false-positive rate on real photos: JPEG q30 at 0.1352 (clean 0.0493).
 - **ResNet50, fine-tuned end-to-end (baseline) / `val_unseen_generator`** — clean AUC 0.9502. Mean change across the 8 degraded conditions: -0.0080. Worst condition: **resize 1/4** at 0.9229 (-0.0273). Highest false-positive rate on real photos: JPEG q30 at 0.1330 (clean 0.0500).
-- **Across backbones**, averaged over every split and condition, ResNet50, fine-tuned end-to-end (baseline) loses least (-0.0059 mean AUC) and CLIP ViT-B/16 + linear head (primary) loses most (-0.0455). The gap between them is 0.0396 AUC.
+- **Across backbones**, averaged over every split and condition, 3-stream: spatial + frequency + noise loses least (-0.0026 mean AUC) and CLIP ViT-B/16 + linear head loses most (-0.0455). The gap between them is 0.0429 AUC.
 
 **Where the damage actually is — the threshold, not the discriminator:**
 
-- **CLIP ViT-B/16 + linear head (primary) / `test` under JPEG q30** — AUC moves -0.0532, but recall moves -0.6038 and FPR -0.0564. The ranking largely survives; what shifts is the fixed operating point, and it drifts toward **"likely real"** — compressed AI images stop being flagged, and the miss rate is where the cost lands.
-- **CLIP ViT-B/16 + linear head (primary) / `val_unseen_generator` under JPEG q30** — AUC moves -0.1194, but recall moves -0.5850 and FPR -0.0460. The ranking largely survives; what shifts is the fixed operating point, and it drifts toward **"likely real"** — compressed AI images stop being flagged, and the miss rate is where the cost lands.
+- **3-stream: spatial + frequency + noise / `test` under JPEG q30** — AUC moves -0.0055, but recall moves -0.0714 and FPR -0.0244. The ranking largely survives; what shifts is the fixed operating point, and it drifts toward **"likely real"** — compressed AI images stop being flagged, and the miss rate is where the cost lands.
+- **3-stream: spatial + frequency + noise / `val_unseen_generator` under JPEG q30** — AUC moves -0.0135, but recall moves -0.1410 and FPR -0.0160. The ranking largely survives; what shifts is the fixed operating point, and it drifts toward **"likely real"** — compressed AI images stop being flagged, and the miss rate is where the cost lands.
+- **CLIP ViT-B/16 + linear head / `test` under JPEG q30** — AUC moves -0.0532, but recall moves -0.6038 and FPR -0.0564. The ranking largely survives; what shifts is the fixed operating point, and it drifts toward **"likely real"** — compressed AI images stop being flagged, and the miss rate is where the cost lands.
+- **CLIP ViT-B/16 + linear head / `val_unseen_generator` under JPEG q30** — AUC moves -0.1194, but recall moves -0.5850 and FPR -0.0460. The ranking largely survives; what shifts is the fixed operating point, and it drifts toward **"likely real"** — compressed AI images stop being flagged, and the miss rate is where the cost lands.
 - **ResNet50, fine-tuned end-to-end (baseline) / `test` under JPEG q30** — AUC moves -0.0111, but recall moves +0.0177 and FPR +0.0859. The ranking largely survives; what shifts is the fixed operating point, and it drifts toward **"likely AI-generated"** — compressed *real photos* start being flagged, which §4.2 calls the costly error.
 - **ResNet50, fine-tuned end-to-end (baseline) / `val_unseen_generator` under JPEG q30** — AUC moves -0.0172, but recall moves +0.1030 and FPR +0.0830. The ranking largely survives; what shifts is the fixed operating point, and it drifts toward **"likely AI-generated"** — compressed *real photos* start being flagged, which §4.2 calls the costly error.
 
@@ -108,4 +144,4 @@ Each model keeps the operating point calibrated on **clean** `val`. The threshol
 - **Degradations are applied one at a time.** Real images often arrive compressed *and* resized *and* re-saved; compounded degradation is not measured here.
 - Conditions are deterministic and fixed, so this table is reproducible, but it is a fixed ladder rather than a random sample of real-world handling.
 
-*Grid: 9 conditions × 2 split(s) × 2 model(s). Generated 2026-09-14T20:05:01+00:00.*
+*Grid: 9 conditions × 2 split(s) × 3 model(s). Generated 2026-09-15T03:29:10+00:00.*
