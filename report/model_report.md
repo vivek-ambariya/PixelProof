@@ -5,7 +5,7 @@ the submission contract §7.3.*
 
 | Field | |
 |---|---|
-| **Task** | Binary real-vs-AI-generated image classification, calibrated confidence score. Bonus A attempted (faithful explanation: Grad-CAM heat-map + grounded, measurement-derived text — see `report/explanation_samples/`). |
+| **Task** | Binary real-vs-AI-generated image classification, calibrated confidence score. Bonus A attempted (faithful explanation: Grad-CAM heat-map + grounded, measurement-derived text — see `report/explanation_samples/`). Bonus C attempted (degradation-vs-accuracy analysis — see `report/robustness.md` and the Robustness section below). |
 | **Data & split** | **Train/val/in-distribution test**: [CIFAKE](https://www.kaggle.com/datasets/birdy654/cifake-real-and-ai-generated-synthetic-images) (Bird & Lotfi 2023) — real half is CIFAR-10, AI half is Stable Diffusion 1.4, all 32×32. Used 24,000 train images for the primary (CLIP) model, 12,000 for the baseline (ResNet50), out of 100,000 available, plus 8,000 val and 20,000 test (both untouched by training). **Unseen-content split** (proxy, not a substitute for cross-generator testing): whole CIFAR-10 classes (horse, ship — 19,801 images) held out of train entirely. **Unseen-generator split** (the primary generalisation metric): 1,000 [ProGAN](https://huggingface.co/datasets/frp94/progan_val) images, resolution-matched to 32×32 to remove a resolution confound, held out of train entirely, matched with 1,000 CIFAR-10 reals (2,000 total). All five CSVs are built by `data/prepare.py`; a leak check confirms zero path overlap across all 121,000 indexed images. |
 | **Model / approach** | **Primary:** frozen `vit_base_patch16_clip_224.openai` (timm) — 85,996,545 total params, **197,121 trainable (0.229%)**, verified — feeding `Dropout(0.3) → Linear(768,256) → GELU → Linear(256,1)`. Frozen backbone lets features be precomputed once across 4 fixed augmentation variants (clean / JPEG-q40 / downscale-upscale / blur) so the head trains in <1s/epoch; chosen per Ojha et al. 2023 (arXiv:2302.10174), which reports frozen-CLIP-features-plus-linear-probe generalising across generators better than end-to-end fine-tuning. **Baseline:** `resnet50` (torchvision, ImageNet weights), same head, fine-tuned end to end (24,032,833/24,032,833 trainable). AdamW + cosine LR with warmup, `BCEWithLogitsLoss`, early stopping on **`val_unseen_content` AUC** (not overall val AUC — see Limitations). Calibration: temperature scaling fit on `val`, threshold chosen for FPR ≤ 5% on `val`. |
 | **Metric & result** | See table below. Primary ranking metric is **unseen-generator AUC**. |
@@ -57,6 +57,42 @@ adjusted after the fact, because the entire point of the unseen-generator
 metric is to catch exactly this kind of gap between "generalises well by one
 measure" and "generalises well against a genuinely new generator."
 
+## Robustness to degradation (bonus C)
+
+Nine conditions — clean, JPEG q90/q70/q50/q30, resize ½ and ¼,
+screenshot-then-share, light edit — applied at 224px display scale to both
+splits and both models, at each model's *clean*-calibrated threshold (never
+re-fitted per condition, since a deployed detector does not know what arrived).
+Full grid: `report/robustness.md`; reproduce with `python model/robustness.py`.
+
+Mean ROC-AUC change across the 8 degraded conditions:
+
+| model | test | val_unseen_generator | overall |
+|---|---|---|---|
+| CLIP ViT-B/16 (primary) | −0.0342 | −0.0567 | −0.0455 |
+| **ResNet50 (baseline)** | **−0.0037** | **−0.0080** | **−0.0059** |
+
+ResNet50 is ~8× more robust. Resizing costs almost nothing for either model;
+JPEG compression is the damaging axis.
+
+**The failure mode is calibration drift, not lost discrimination — and the two
+models drift in opposite directions.** At JPEG q30 on `val_unseen_generator`:
+
+| model | ΔAUC | Δrecall | ΔFPR | drifts toward |
+|---|---|---|---|---|
+| CLIP | −0.1194 | −0.5850 (0.716 → 0.131) | −0.0460 | "likely real" — compressed AI images stop being flagged |
+| ResNet50 | −0.0172 | +0.1030 (0.769 → 0.872) | +0.0830 (0.050 → 0.133) | "likely AI-generated" — compressed *real photos* get flagged, the error §4.2 calls costly |
+
+Ranking survives compression in both cases; the fixed operating point does not.
+The mitigation this points at — fitting temperature and threshold on a
+degradation-mixed `val` instead of a clean one — is **not implemented in this
+build** and is stated as a next step, not a result.
+
+Read together with the baseline comparison above, this compounds the same
+conclusion: ResNet50 beats frozen CLIP on the unseen generator *and* degrades
+far more gracefully, so the frozen-backbone rationale does not survive either
+test that matters here.
+
 ## Limitations
 
 - **A content-holdout is a weaker proxy for cross-generator generalisation
@@ -76,9 +112,15 @@ measure" and "generalises well against a genuinely new generator."
 - **The ProGAN holdout is 1,000 images from one additional generator** — real
   evidence of generalisation, not a comprehensive cross-generator benchmark.
   Its exact provenance/licence is not fully confirmed (see README §3).
-- Expect further degradation on generators released after this build, on
-  compression/resizing/screenshotting beyond the augmentation used in
-  training, and on image content very unlike CIFAR-10's ten classes.
+- **Compression defeats the calibrated threshold** — measured, not assumed
+  (see Robustness above). The grid applies one degradation at a time, so
+  compounded handling (compressed *and* resized *and* re-saved) remains
+  unmeasured, and it degrades images upscaled from 32×32 rather than natively
+  high-resolution ones — CIFAKE provides no high-resolution set, and the
+  native-resolution ProGAN images have no native-resolution real counterpart
+  to pair with, so no AUC can be computed from them alone.
+- Expect further degradation on generators released after this build and on
+  image content very unlike CIFAR-10's ten classes.
 - Per the challenge's scope rules, PixelProof makes **no claim about the
   identity of any person** in an image and is not built or evaluated for
   face-swap deepfakes.

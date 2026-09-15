@@ -17,7 +17,7 @@ person appearing in one.
 |---|---|---|
 | **Core** | Real-vs-AI-generated classification, calibrated confidence, ROC-AUC / macro-F1 / confusion matrix on held-out data (incl. an unseen-generator split), minimal interface | ✅ built |
 | **Bonus A** | Faithful explanation — Grad-CAM heat-map + grounded, measurement-derived text (not free-form prose) | ✅ built |
-| **Bonus C** | Robustness to degradation — trained with JPEG re-compression, downscale/upscale and blur variants; not yet benchmarked with a degradation-vs-accuracy curve | ◐ partial |
+| **Bonus C** | Robustness to degradation — a full degradation-vs-accuracy grid (9 conditions × 2 splits × both models) covering JPEG compression, resizing, screenshotting and light edits, with the failure mode analysed: [report/robustness.md](report/robustness.md) | ✅ built |
 | B, D, E, F, G | Generator attribution, provenance/EXIF, multimodal text consistency, deployable interface polish, adversarial analysis | not attempted |
 
 Module F (deployable interface) is effectively covered by the shipped web app
@@ -95,6 +95,42 @@ Calibration: T=0.9006, threshold=0.5287
 | val_unseen_content (proxy) | 0.9685 | 0.8889 | 0.8894 | 0.0431 | 0.8220 | 9569 / 431 / 1780 / 8220 |
 | **val_unseen_generator (ProGAN, true unseen generator)** | **0.9519** | 0.8625 | 0.8635 | 0.0500 | 0.7770 | 950 / 50 / 223 / 777 |
 
+### Robustness to degradation (bonus C)
+
+Full grid in [report/robustness.md](report/robustness.md) — 9 conditions
+(JPEG q90/q70/q50/q30, resize ½ and ¼, screenshot-then-share, light edit,
+plus a clean reference) across both splits and both models, reproducible with
+`python model/robustness.py`. Mean ROC-AUC change across the 8 degraded
+conditions:
+
+| model | test | val_unseen_generator | worst single condition |
+|---|---|---|---|
+| CLIP ViT-B/16 (primary) | −0.0342 | −0.0567 | JPEG q30 on unseen-generator, 0.9412 → 0.8218 |
+| **ResNet50 (baseline)** | **−0.0037** | **−0.0080** | resize ¼ on unseen-generator, 0.9502 → 0.9229 |
+
+**ResNet50 is roughly 8× more robust than the frozen-CLIP model** (−0.0059 vs
+−0.0455 mean AUC averaged over every split and condition). Resizing is nearly
+free for both; JPEG compression is what hurts, and it hurts CLIP far more.
+
+**The more useful finding is *how* they break.** For both models the ranking
+largely survives compression — it is the fixed operating point that drifts,
+and the two drift in **opposite directions**:
+
+- **CLIP drifts toward "likely real."** At JPEG q30 on the unseen-generator
+  split, recall falls 0.716 → 0.131 while FPR falls to 0.004. Compressed AI
+  images quietly stop being flagged.
+- **ResNet50 drifts toward "likely AI-generated."** At the same setting, recall
+  *rises* 0.769 → 0.872 but FPR rises 0.050 → 0.133 — it starts flagging
+  compressed real photos, which §4.2 names as the costly error.
+
+So the honest read is that PixelProof's robustness weakness is **calibration
+drift under compression, not loss of discrimination**. The concrete mitigation
+that follows — fitting the temperature and threshold on a degradation-mixed
+`val` rather than a clean one, so the operating point is chosen under the
+conditions images actually arrive in — is **not implemented in this build**;
+it is what the measurement points at, stated as a next step rather than a
+claim.
+
 **The finding that matters most, honestly reported:** the fine-tuned ResNet50
 baseline generalises to a *genuinely new* generator (ProGAN, a GAN, never seen
 in training) **slightly better** than the frozen-CLIP primary model (0.9519 vs
@@ -146,10 +182,14 @@ in-distribution accuracy alone would have shipped a worse-generalising model.
   explanation only ever states what it actually measured.
 - **The ProGAN holdout is small** (1,000 images) and single-generator; it is
   real evidence, not a comprehensive cross-generator benchmark.
+- **Compression breaks the calibrated threshold, in opposite directions for
+  the two models** — now measured rather than assumed; see the robustness
+  grid above and [report/robustness.md](report/robustness.md). The grid
+  applies one degradation at a time, so compounded handling (compressed *and*
+  resized *and* re-saved) is still unmeasured, and it degrades images upscaled
+  from 32×32 rather than natively high-resolution ones.
 - Accuracy is expected to drop further on generators released after this
-  build, on heavily-compressed/resized/screenshotted images beyond what
-  training augmentation covers, and on content categories very unlike
-  CIFAR-10's ten classes.
+  build, and on content categories very unlike CIFAR-10's ten classes.
 - Per the challenge's own scope rules, this system makes **no claim about
   people** in an image and is not evaluated on face-swap deepfakes.
 
@@ -210,6 +250,11 @@ pixelproof/
     predict.py               # CLI: --input <file|folder> --out preds.csv
     evaluate.py               # ROC-AUC / macro-F1 / confusion matrix /
                               # accuracy & FPR at threshold, per split
+    robustness.py             # degradation-vs-accuracy grid (bonus C):
+                              # 9 conditions x splits x models, at 224px
+                              # display scale. --self-check verifies the
+                              # degradations; --rebuild-report rewrites the
+                              # write-up without re-scoring
   src/
     inference.py            # SHARED: the only place that loads a model and
                             # scores an image — predict.py and api.py both
@@ -221,5 +266,7 @@ pixelproof/
   report/
     model_report.md          # the required one-page report
     metrics_final.json        # full metrics, all splits, both models
+    robustness.json           # the degradation grid, every cell
+    robustness.md             # the degradation-vs-accuracy analysis (bonus C)
     explanation_samples/       # sample /predict outputs + heat-maps
 ```
