@@ -18,11 +18,11 @@ person appearing in one.
 | **Core** | Real-vs-AI-generated classification, calibrated confidence, ROC-AUC / macro-F1 / confusion matrix on held-out data (incl. an unseen-generator split), minimal interface | ✅ built |
 | **Bonus A** | Faithful explanation — Grad-CAM heat-map + grounded, measurement-derived text (not free-form prose) | ✅ built |
 | **Bonus C** | Robustness to degradation — a full degradation-vs-accuracy grid (9 conditions × 2 splits × both models) covering JPEG compression, resizing, screenshotting and light edits, with the failure mode analysed: [report/robustness.md](report/robustness.md) | ✅ built |
-| B, D, E, F, G | Generator attribution, provenance/EXIF, multimodal text consistency, deployable interface polish, adversarial analysis | not attempted |
+| **Bonus F** | Deployable interface — the shipped web app (`uvicorn src.api:app`), containerised (`Dockerfile`) and deployed live: React frontend on Vercel, FastAPI backend on Render. **Caveat:** free-tier hosts cannot hold the CLIP backbone in memory, so upload-and-analyse runs locally but is degraded on the hosted URL — see [§6](#6-demo-video--deployed-app) | ✅ built (local) · ⚠️ hosted demo degraded |
+| B, D, E, G | Generator attribution, provenance/EXIF, multimodal text consistency, adversarial analysis | not attempted |
 
-Module F (deployable interface) is effectively covered by the shipped web app
-(`uvicorn src.api:app`) even though not separately engineered as a browser
-extension.
+Module F was not separately engineered as a browser extension; the deployed web
+app is the interface.
 
 ## 2. Setup and run instructions (reproduces a prediction in under 10 minutes)
 
@@ -31,7 +31,7 @@ extension.
 pre-built and committed.
 
 ```bash
-git clone <this-repo-url>
+git clone https://github.com/vivek-ambariya/PixelProof.git
 cd PixelProof
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -65,10 +65,23 @@ image.
 |---|---|---|---|---|
 | **CIFAKE** | Training + in-distribution val/test. Real half is CIFAR-10; AI half is Stable Diffusion 1.4 images, both at 32×32. | 24,000 train (CLIP) / 12,000 train (ResNet50) of 100,000 available; 8,000 val; 20,000 test | [Kaggle: birdy654/cifake-real-and-ai-generated-synthetic-images](https://www.kaggle.com/datasets/birdy654/cifake-real-and-ai-generated-synthetic-images); introduced in Bird & Lotfi, *"CIFAKE: Image Classification and Explainable Identification of AI-Generated Synthetic Images"*, 2023 ([arXiv:2303.14126](https://arxiv.org/abs/2303.14126)) | Stated as open/research-use on Kaggle — **confirm the exact licence text on the dataset page before any redistribution beyond this submission**; not independently re-verified here. |
 | **ProGAN validation images** | Held out entirely as the unseen-generator split (`val_unseen_generator`) — never trained on. Resolution-matched to 32×32 before use (see §5) so the split measures generator artefacts, not resolution. | 1,000 images (bird/car/dog categories) | [huggingface.co/datasets/frp94/progan_val](https://huggingface.co/datasets/frp94/progan_val) | **Not stated on the source page** (dataset card lists licence as "more information needed"). The category structure (bird/car/dog…) matches the well-known ProGAN validation benchmark from Wang et al., *"CNN-Generated Images Are Surprisingly Easy to Spot… For Now"*, CVPR 2020 — plausibly the same underlying images repackaged, but this is **not confirmed** and should be verified before any use beyond this internal submission. |
+| **GenImage** — Midjourney generations + ImageNet photographs, both at **native resolution** | Fixes the all-32×32 training distribution (see *Why a second dataset was added* below). Supplies native-resolution examples to **both** classes in `train`/`val`, plus `test_native` — a held-out native split physically moved out of `data/raw/` so it cannot leak into training. | **1,590 train** (798 Midjourney / 792 ImageNet real) · **170 val** (82 / 88) · **800 held out** (400 / 400) → `data/csv/test_native.csv` | [huggingface.co/datasets/shimei123/Genimage](https://huggingface.co/datasets/shimei123/Genimage) — a mirror of the GenImage benchmark (Zhu et al., *"GenImage: A Million-Scale Benchmark for Detecting AI-Generated Images"*, NeurIPS 2023 Datasets & Benchmarks track). Pulled by HTTP-range streaming rather than full download — `data/fetch_genimage.py`. | **Not stated on the mirror's page.** The challenge brief names GenImage as permitted extra training data (§4.1) **provided it is cited** — this row is that citation. Confirm the upstream licence before any use beyond this internal submission. |
+
+**Why a second dataset was added.** Every CIFAKE image is 32×32-native, which
+let *"sharp, detailed image"* stand in for *"AI-generated"* inside the training
+distribution — no real training example was ever sharp. On a genuine
+native-resolution photograph that shortcut **inverts**, and the detector calls
+real photos fake with high confidence. Augmentation cannot repair this:
+blurring or re-compressing a 32×32 image cannot add real high-frequency detail
+to the *real* class. GenImage supplies both halves at native resolution, so the
+shortcut is no longer available. **The effect of this fix is not yet measured** —
+`test_native` exists and is correctly held out, but none of the models reported
+in §4 have been evaluated on it, so no claim is made here about how much it
+helped.
 
 Training data was **not** touched by calibration or evaluation; `val` is used
-for calibration and threshold selection, `test` and both unseen splits are
-untouched by both training and calibration.
+for calibration and threshold selection, `test`, `test_native` and the unseen
+splits are untouched by both training and calibration.
 
 ## 4. Reported metrics
 
@@ -253,7 +266,11 @@ in-distribution accuracy alone would have shipped a worse-generalising model.
   which measurably degrades the Grad-CAM heat-map (a 14×14 attention grid over
   what was 32px of real content) and likely destroys most of the
   frequency-lattice cue the explainer text describes, even though the
-  explanation only ever states what it actually measured.
+  explanation only ever states what it actually measured. **Partially
+  addressed** by the native-resolution GenImage data added to `train`/`val`
+  (§3), but the metrics reported in §4 predate that addition and no model has
+  yet been scored on the held-out `test_native` split — so the resolution
+  shortcut is *mitigated in the data*, not *demonstrated fixed in the numbers*.
 - **The ProGAN holdout is small** (1,000 images) and single-generator; it is
   real evidence, not a comprehensive cross-generator benchmark.
 - **Compression breaks the calibrated threshold, in opposite directions for
@@ -269,9 +286,17 @@ in-distribution accuracy alone would have shipped a worse-generalising model.
 
 ## 6. Demo video & deployed app
 
-- Demo video: **[add link before submission]**
-- Deployed app: **[add link if hosted, or note "run locally via the command
-  above" — see §2]**
+- **Demo video (~3 min walkthrough):** **[TODO: add hosted link here]** —
+  recorded locally but too large (~230 MB) to commit directly to GitHub
+  (over the 100 MB per-file limit without Git LFS); upload to Drive/YouTube
+  and drop the link in.
+- **Full project report:** [Google Drive folder](https://drive.google.com/drive/folders/13LkQxfQDSFrQXZU1hseW03y0Buizw8TS?usp=sharing)
+- **Deployed app:** [pixel-proof-plum.vercel.app](https://pixel-proof-plum.vercel.app/)
+  — frontend on Vercel, backend (FastAPI + model) on Render. **Known issue:**
+  the free-tier hosts don't have enough RAM/GPU to load the CLIP backbone and
+  run inference reliably, so image upload and analysis don't fully work on the
+  deployed version yet — use the local setup in §2 for a working end-to-end
+  demo.
 
 ---
 
@@ -314,6 +339,15 @@ pixelproof/
   data/prepare.py          # builds train/val/test CSVs; holds out named
                            # generators AND whole content classes as two
                            # separate, honestly-named generalisation splits
+    fetch_genimage.py      # streams a capped native-resolution sample of
+                           # GenImage (Midjourney + ImageNet reals) via HTTP
+                           # range requests — pays for the images pulled, not
+                           # the 7.7 GB archive
+    normalise_native.py    # normalises the fetched native images
+    make_native_testset.py # carves the held-out native split, physically
+                           # moving it to data/holdout_native/ so it cannot
+                           # leak into train/val → data/csv/test_native.csv
+    rebalance_train.py     # oversamples the native data into train/val
   model/
     dataset.py             # torch Dataset over the CSVs
     model.py               # frozen CLIP ViT-B/16 (or ResNet50 --backbone
