@@ -1,0 +1,35 @@
+# Mirrors .gitignore, but Docker's build context isn't filtered by that file
+# unless you're building straight from a git archive — this keeps a local
+# `docker build .` lean and stops the datasets or real checkpoints from ever
+# reaching an image layer.
+
+.git/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+data/*
+!data/*.py
+
+model/checkpoints/*.pth
+*.pth
+*.pt
+*.ckpt
+
+src/frontend/node_modules/
+src/frontend/src/
+src/frontend/*.config.js
+src/frontend/package*.json
+
+*.zip
+*.log
+preds.csv
+runs/
+.DS_Store
+
+Dockerfile
+.dockerignore
+docs/
+design/
+report/

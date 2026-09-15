@@ -1,0 +1,7 @@
+{
+  "//": "Frontend on Vercel, inference on Render (see /Dockerfile at repo root -- same image, no changes needed). The app itself calls relative paths like /predict, so this rewrite makes them same-origin from the browser's point of view -- Vercel proxies server-side to Render. Swap the placeholder for the Render service's URL once it's deployed, e.g. https://pixelproof.onrender.com",
+  "rewrites": [
+    { "source": "/predict", "destination": "https://REPLACE-WITH-YOUR-SERVICE.onrender.com/predict" },
+    { "source": "/api/:path*", "destination": "https://REPLACE-WITH-YOUR-SERVICE.onrender.com/api/:path*" }
+  ]
+}
