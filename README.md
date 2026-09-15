@@ -380,5 +380,6 @@ pixelproof/
 
 ## 📹 Walkthrough Video
 
-- **Video file:** [`pixel proof demo.mp4`](./pixel%20proof%20demo.mp4) (19 MB)
+<video src="pixel%20proof%20demo.mp4" controls width="100%"></video>
 
+*Direct link to watch/download:* [`pixel proof demo.mp4`](./pixel%20proof%20demo.mp4) (19 MB) · [Google Drive Backup](https://drive.google.com/drive/folders/13LkQxfQDSFrQXZU1hseW03y0Buizw8TS)
