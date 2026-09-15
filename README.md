@@ -286,11 +286,8 @@ in-distribution accuracy alone would have shipped a worse-generalising model.
 
 ## 6. Demo video & deployed app
 
-- **Demo video (~3 min walkthrough):** **[TODO: add hosted link here]** —
-  recorded locally but too large (~230 MB) to commit directly to GitHub
-  (over the 100 MB per-file limit without Git LFS); upload to Drive/YouTube
-  and drop the link in.
-- **Full project report:** [Google Drive folder](https://drive.google.com/drive/folders/13LkQxfQDSFrQXZU1hseW03y0Buizw8TS?usp=sharing)
+- **Demo video (~3 min walkthrough):** [Google Drive Video & Project Folder](https://drive.google.com/drive/folders/13LkQxfQDSFrQXZU1hseW03y0Buizw8TS)
+- **Full project report:** [Google Drive folder](https://drive.google.com/drive/folders/13LkQxfQDSFrQXZU1hseW03y0Buizw8TS)
 - **Deployed app:** [pixel-proof-plum.vercel.app](https://pixel-proof-plum.vercel.app/)
   — frontend on Vercel, backend (FastAPI + model) on Render. **Known issue:**
   the free-tier hosts don't have enough RAM/GPU to load the CLIP backbone and
