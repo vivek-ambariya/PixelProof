@@ -286,7 +286,7 @@ in-distribution accuracy alone would have shipped a worse-generalising model.
 
 ## 6. Demo video & deployed app
 
-- **Demo video (~3 min walkthrough):** [Google Drive Video & Project Folder](https://drive.google.com/drive/folders/13LkQxfQDSFrQXZU1hseW03y0Buizw8TS)
+- **Demo video (~3 min walkthrough):** [pixel proof demo.mp4](./pixel%20proof%20demo.mp4) · [Google Drive Mirror](https://drive.google.com/drive/folders/13LkQxfQDSFrQXZU1hseW03y0Buizw8TS)
 - **Full project report:** [Google Drive folder](https://drive.google.com/drive/folders/13LkQxfQDSFrQXZU1hseW03y0Buizw8TS)
 - **Deployed app:** [pixel-proof-plum.vercel.app](https://pixel-proof-plum.vercel.app/)
   — frontend on Vercel, backend (FastAPI + model) on Render. **Known issue:**
@@ -375,3 +375,10 @@ pixelproof/
     robustness.md             # the degradation-vs-accuracy analysis (bonus C)
     explanation_samples/       # sample /predict outputs + heat-maps
 ```
+
+---
+
+## 📹 Walkthrough Video
+
+- **Video file:** [`pixel proof demo.mp4`](./pixel%20proof%20demo.mp4) (19 MB)
+
