@@ -3,6 +3,10 @@
   "backbone": "clip_vit_b16",
   "epochs": 20,
   "batch_size": 64,
+  "use_probe": false,
+  "probe_iterations": 3,
+  "probe_percentile": 10,
+  "probe_epochs": 5,
   "lr": null,
   "weight_decay": 0.0001,
   "warmup_frac": 0.1,
@@ -10,12 +14,14 @@
   "out": "/Users/ambariyavivek/vivek college/PixelProof/model/checkpoints",
   "cache_dir": "/Users/ambariyavivek/vivek college/PixelProof/data/cache",
   "num_workers": 4,
+  "augment": "enhanced",
+  "augment_unsafe": false,
+  "monitor_split": "val_unseen_content",
   "seed": 42,
   "device": "mps",
-  "limit_train": 24000,
+  "limit_train": 0,
   "no_half": false,
   "overfit": 0,
-  "monitor_split": "val_unseen_content",
   "k_variants": 4,
   "variant_spec": [
     {
@@ -79,5 +85,5 @@
   "total_params": 85996545,
   "trainable_params": 197121,
   "pos_weight": null,
-  "train_rows": 24000
+  "train_rows": 25244
 }
