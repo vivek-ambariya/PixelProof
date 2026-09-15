@@ -2,12 +2,12 @@
   cursor: pointer;
   border: 1px dashed var(--pp-rule-strong);
   background: var(--pp-panel);
-  padding: 52px 40px;
+  padding: 60px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 352px;
+  min-height: 480px;
   text-align: center;
   transition: border-color var(--pp-dur-fast), background var(--pp-dur-fast);
 }
@@ -26,17 +26,17 @@
   background: var(--pp-rule);
 }
 
-.plus { width: 46px; height: 46px; border: 1px solid var(--pp-teal); position: relative; margin-bottom: 24px; flex: none; }
+.plus { width: 58px; height: 58px; border: 1px solid var(--pp-teal); position: relative; margin-bottom: 28px; flex: none; }
 .plus::before, .plus::after { content: ''; position: absolute; background: var(--pp-teal); }
-.plus::before { left: 50%; top: 12px; bottom: 12px; width: 1px; }
-.plus::after { top: 50%; left: 12px; right: 12px; height: 1px; }
+.plus::before { left: 50%; top: 15px; bottom: 15px; width: 1px; }
+.plus::after { top: 50%; left: 15px; right: 15px; height: 1px; }
 
-.label { font-size: 17px; font-weight: 500; letter-spacing: -0.01em; }
+.label { font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
 
 .hint {
-  margin-top: 9px;
+  margin-top: 11px;
   font-family: var(--pp-mono);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.09em;
   color: var(--pp-muted-2);
   line-height: 1.7;
@@ -58,5 +58,5 @@
 .sample:hover { border-color: var(--pp-muted); color: var(--pp-text); }
 
 @media (max-width: 900px) {
-  .zone { min-height: 260px; padding: 36px 20px; }
+  .zone { min-height: 320px; padding: 36px 20px; }
 }

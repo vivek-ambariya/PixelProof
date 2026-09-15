@@ -1,58 +1,16 @@
-.hero { padding: 76px 0 92px; }
+.hero { padding: 96px 0 112px; }
 
-/* Asymmetric two-column split, matching the reference. The dropzone lives in
-   the right column so it is visible without scrolling. */
+/* Single centered column — the dropzone is the whole hero. */
 .wrap {
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 64px;
-  align-items: start;
+  max-width: 720px;
+  margin: 0 auto;
 }
-
-.kicker {
-  font-family: var(--pp-mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  color: var(--pp-amber-deep);
-  text-transform: uppercase;
-}
-
-.title {
-  margin: 20px 0 0;
-  font-family: var(--pp-display);
-  font-weight: 900;
-  font-stretch: 76%;
-  text-transform: uppercase;
-  letter-spacing: -0.022em;
-  font-size: clamp(40px, 5.6vw, 76px);
-  line-height: 0.92;
-}
-
-.lede {
-  margin: 26px 0 0;
-  max-width: 46ch;
-  font-size: 17px;
-  line-height: 1.6;
-  color: var(--pp-text-3);
-}
-
-.stats {
-  display: flex;
-  gap: 30px;
-  margin: 38px 0 0;
-  font-family: var(--pp-mono);
-  font-size: 11px;
-  letter-spacing: 0.09em;
-  color: var(--pp-muted-2);
-  flex-wrap: wrap;
-}
-.statValue { color: var(--pp-text); font-size: 20px; letter-spacing: -0.01em; }
 
 /* --- loading --- */
 .loading {
   border: 1px solid var(--pp-rule);
   background: var(--pp-panel);
-  min-height: 352px;
+  min-height: 480px;
   padding: 30px;
   display: flex;
   flex-direction: column;
@@ -69,7 +27,7 @@
 }
 @keyframes ppSweep {
   0% { transform: translateY(0); }
-  100% { transform: translateY(352px); }
+  100% { transform: translateY(480px); }
 }
 .loadingLabel {
   font-family: var(--pp-mono);
@@ -91,7 +49,7 @@
 .error {
   border: 1px solid var(--pp-warn-rule);
   background: var(--pp-warn-bg);
-  min-height: 352px;
+  min-height: 480px;
   padding: 30px;
   display: flex;
   flex-direction: column;
@@ -135,7 +93,4 @@
 
 @media (max-width: 900px) {
   .hero { padding: 44px 0 56px; }
-  .wrap { grid-template-columns: 1fr; gap: 32px; }
-  .title { font-size: 44px; }
-  .lede { font-size: 16px; }
 }
